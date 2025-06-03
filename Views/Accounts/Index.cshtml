@@ -1,0 +1,20 @@
+﻿@model List<AccountManagementSystem.Models.AccountsModel>
+
+<h2>Chart of Accounts</h2>
+
+<table border="1">
+    <tr>
+        <th>Account ID</th>
+        <th>Account Name</th>
+        <th>Parent Id</th>
+    </tr>
+    @foreach (var account in Model)
+    {
+        <tr>
+            <td>@(account.Id)</td>
+            <td>@account.AccountName</td>
+            <td>@(account.ParentId.HasValue ? account.ParentId.ToString() : "None")</td>
+        </tr>
+    }
+</table>
+

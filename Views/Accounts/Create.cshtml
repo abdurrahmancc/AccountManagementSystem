@@ -1,0 +1,171 @@
+﻿@model AccountManagementSystem.Models.AccountsModel
+
+<style>
+    .floating_custom_error {
+        border-color: red;
+    }
+
+    .req-star {
+        color: red;
+    }
+
+    .field-validation-error {
+        color: red;
+        font-size: 12px;
+        position: absolute;
+        left: 15px;
+    }
+
+
+    .custom_floating_input_field::placeholder {
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .custom_floating_input_field:focus::placeholder {
+        opacity: 1;
+    }
+
+    .custom_input_container {
+        position: relative;
+        margin: 0px 0px 28px 0px;
+        width: 100%;
+    }
+
+    .custom_floating_input_field {
+        font-size: 16px;
+        padding: 18px;
+        display: block;
+        width: 100%;
+        border-radius: 30px;
+        background: transparent;
+        outline: none;
+        transition: all 0.2s ease;
+        box-shadow: 1px 1px 4px 0px #7A7A7A40;
+        max-width: -webkit-fill-available;
+    }
+
+    .custom_floating_input_field {
+        border: 1px solid #4B465C29;
+        color: #4D5156;
+    }
+
+
+
+        .custom_floating_input_field:focus {
+            border: 1px solid #0D99FF;
+            border-radius: 30px;
+        }
+
+            .custom_floating_input_field:focus ~ .custom_floating_label .icons svg,
+            .custom_floating_input_field:not(:placeholder-shown) ~ .custom_floating_label .icons svg {
+                width: 16px;
+                height: 16px;
+            }
+
+            .custom_floating_input_field:focus ~ .custom_floating_label,
+            .custom_floating_input_field:not(:placeholder-shown) ~ .custom_floating_label {
+                top: -7px;
+                font-size: 12px;
+                color: #6A6678;
+            }
+
+
+    .custom_floating_label {
+        font-size: 16px;
+        font-weight: normal;
+        position: absolute;
+        pointer-events: none;
+        left: 15px;
+        top: 19px;
+        transition: all 0.2s ease;
+        background: white;
+        padding: 0 5px;
+    }
+
+
+    .custom_floating_label {
+        background: white;
+        color: #999;
+    }
+
+    .custom_floating_label_dev {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .custom_forgot_password {
+        margin-top: 24px;
+        margin-bottom: 24px;
+        font-size: 16px;
+        line-height: 24px;
+        color: #0D99FF;
+        text-align: end;
+    }
+
+
+    .custom_submit_button {
+        font-size: 22px;
+        width: 100%;
+        border-radius: 30px;
+        line-height: 26px;
+        padding-top: 17px;
+        padding-bottom: 17px;
+        color: #FFFFFF;
+        border: none;
+        background-color: #0D99FF;
+        box-shadow: 1px 1px 4px 0px #0D99FF40;
+    }
+
+
+
+    #custom_submit_submit:focus {
+        outline: none;
+        border: none;
+    }
+
+    .custome-floating_form_parent {
+        background-color: #fff;
+        box-shadow: 0px 4px 18px 0px #4B465C1A;
+        padding: 40px 32px;
+        border-radius: 24px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+</style>
+
+<div style="display:flex; flex-direction:column; margin-top: 100px;">
+    <form asp-action="Create" method="post" id="create_account_form" novalidate style="max-width: 495px; margin:auto;" class="custome-floating_form_parent">
+    <h2 style="margin-bottom: 40px;">Create Account</h2>
+        <div class="" style="width: 100%;">
+            <div class="custom_input_container ">
+                <input asp-for="AccountName" type="text"  class="custom_floating_input_field" placeholder="Enter Your Account Name" required>
+                <label asp-for="AccountName" class="custom_floating_label">
+                    <div class="custom_floating_label_dev">
+                        AccountName<span class="req-star">*</span>
+                    </div>
+                </label>
+                <span asp-validation-for="AccountName"></span>
+            </div>
+            <div class="custom_input_container ">
+                <input asp-for="ParentId" type="text"  class="custom_floating_input_field" placeholder="Enter Your Parent Account">
+                <label asp-for="ParentId"  class="custom_floating_label">
+                    <div class="custom_floating_label_dev">
+                        Parent Account (Optional)
+                    </div>
+                </label>
+            </div>
+
+
+            <div class="w-full">
+                <button type="submit" id="custom_submit_submit" class="custom_submit_button">
+                    Submit
+                </button>              
+            </div>
+        </div>
+
+    </form>
+</div>
