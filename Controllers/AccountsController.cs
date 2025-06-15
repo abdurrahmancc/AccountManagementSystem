@@ -18,14 +18,14 @@ namespace AccountManagementSystem.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Viewer,Moderator")]
+        //[Authorize(Roles = "Admin,Viewer,Moderator")]
         public IActionResult Index()
         {
             List<AccountsModel> accounts = new List<AccountsModel>();
 
             using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
-                string query = "SELECT Id, AccountName, ParentId FROM Accounts";
+                string query = "SELECT UserId, FullName, Email, Password, Role FROM AspNetUsers";
                 SqlCommand cmd = new SqlCommand(query, conn);
                 conn.Open();
                 SqlDataReader reader = cmd.ExecuteReader();
@@ -34,9 +34,11 @@ namespace AccountManagementSystem.Controllers
                 {
                     accounts.Add(new AccountsModel
                     {
-                        Id = reader.GetGuid(0),
-                        AccountName = reader.GetString(1),
-                        ParentId = reader.IsDBNull(2) ? (Guid?)null : reader.GetGuid(2)
+                        UserId = reader.GetGuid(0),
+                        FullName = reader.GetString(1),
+                        Email = reader.GetString(2),
+                        Password = reader.GetString(3),
+                        Role = reader.GetGuid(0)
                     });
                 }
 
@@ -50,11 +52,15 @@ namespace AccountManagementSystem.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            return View();
+            var model = new AccountViewModel
+            {
+                Roles = GetAllRoles()
+            };
+            return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(AccountsModel model)
+        public async Task<IActionResult> Create(AccountViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -63,15 +69,18 @@ namespace AccountManagementSystem.Controllers
 
             var connStr = _configuration.GetConnectionString("DefaultConnection");
 
+
             using (SqlConnection conn = new SqlConnection(connStr))
             {
-                using (SqlCommand cmd = new SqlCommand("sp_InsertAccount", conn))
+                using (SqlCommand cmd = new SqlCommand("sp_CreatetUser", conn))
                 {
                     cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
-                    cmd.Parameters.AddWithValue("@Id", Guid.NewGuid());
-                    cmd.Parameters.AddWithValue("@AccountName", model.AccountName);
-                    cmd.Parameters.AddWithValue("@ParentId", (object?)model.ParentId ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@UserId", Guid.NewGuid());
+                    cmd.Parameters.AddWithValue("@FullName", model.FullName);
+                    cmd.Parameters.AddWithValue("@Email", model.Email);
+                    cmd.Parameters.AddWithValue("@Password", model.Password);
+                    cmd.Parameters.AddWithValue("@Role", model.SelectedRoleId);
 
                     await conn.OpenAsync();
                     await cmd.ExecuteNonQueryAsync();
@@ -80,5 +89,35 @@ namespace AccountManagementSystem.Controllers
 
             return RedirectToAction("Index");
         }
+
+        private List<RoleModel> GetAllRoles()
+        {
+            var roles = new List<RoleModel>();
+            var connStr = _configuration.GetConnectionString("DefaultConnection");
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                string query = "SELECT RoleId, RoleName FROM AspNetRoles";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    roles.Add(new RoleModel
+                    {
+                        RoleId = (Guid)reader["RoleId"],
+                        RoleName = reader["RoleName"].ToString()
+                    });
+
+                }
+
+                conn.Close();
+            }
+
+            return roles;
+        }
+
+
     }
 }

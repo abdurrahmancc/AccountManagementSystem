@@ -1,6 +1,82 @@
-﻿@model AccountManagementSystem.Models.AccountsModel
+﻿@model AccountManagementSystem.Models.AccountViewModel
+
 
 <style>
+    .select-label {
+        position: absolute;
+        left: 18px;
+        top: -5px;
+        font-size: 12px;
+        line-height: 14px;
+        padding: 0px 7px;
+    }
+
+    .light-theme .select-label {
+        background-color: #fff;
+        color: #4D5156;
+    }
+
+    .dark-theme .select-label {
+        background-color: #2F3349;
+        color: #fff;
+    }
+
+    #select-label-container select {
+        width: 100%;
+        padding: 18px;
+        padding-right: 38px; /* Increase right padding to make space for the arrow */
+        border-radius: 30px;
+        font-size: 16px;
+        line-height: 24px;
+        box-shadow: 1px 1px 4px 0px #7A7A7A40;
+        appearance: none; /* Remove default arrow */
+        -webkit-appearance: none; /* Remove default arrow in Safari */
+        -moz-appearance: none; /* Remove default arrow in Firefox */
+        background-image: url('assets/images/down-arrow.svg');
+        background-repeat: no-repeat;
+        background-position: right 18px center; /* Position the custom arrow 10px from the right edge */
+        background-size: 20px 20px;
+    }
+
+
+    .light-theme #select-label-container select {
+        background-color: #fff;
+        color: #4D5156;
+        border: 1px solid #4B465C29;
+    }
+
+    .dark-theme #select-label-container select {
+        background-color: #2F3349;
+        color: #fff;
+        border: 1px solid #FFFFFF52;
+    }
+
+    #select-label-container select option {
+        padding: 10px;
+        background-color: #ffffff;
+        color: #4D5156;
+    }
+
+
+
+    #select-label-container select {
+        appearance: none; /* For modern browsers */
+        -webkit-appearance: none; /* For WebKit-based browsers */
+        -moz-appearance: none; /* For Firefox */
+    }
+
+        #select-label-container select:focus {
+            border: 1px solid #0D99FF; /* Apply border on focus */
+            outline: none; /* Prevent default focus outline */
+        }
+
+
+
+        #select-label-container select option:checked {
+            background-color: #0D99FF;
+            color: #ffffff;
+        }
+
     .floating_custom_error {
         border-color: red;
     }
@@ -135,28 +211,68 @@
         flex-direction: column;
         align-items: center;
     }
+
+
+    .custom_floating_select_field {
+        appearance: none; 
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding-right: 2rem; 
+        background-image: url('/icons/down-arrow-icon.svg');
+        background-repeat: no-repeat;
+        background-position: right 0.75rem center;
+        background-size: 12px;
+    }
+
 </style>
 
 <div style="display:flex; flex-direction:column; margin-top: 100px;">
     <form asp-action="Create" method="post" id="create_account_form" novalidate style="max-width: 495px; margin:auto;" class="custome-floating_form_parent">
-    <h2 style="margin-bottom: 40px;">Create Account</h2>
+    <h2 style="margin-bottom: 40px;">Create User</h2>
         <div class="" style="width: 100%;">
             <div class="custom_input_container ">
-                <input asp-for="AccountName" type="text"  class="custom_floating_input_field" placeholder="Enter Your Account Name" required>
-                <label asp-for="AccountName" class="custom_floating_label">
+                <input asp-for="FullName" type="text"  class="custom_floating_input_field" placeholder="Full Name" required>
+                <label asp-for="FullName" class="custom_floating_label">
                     <div class="custom_floating_label_dev">
-                        AccountName<span class="req-star">*</span>
+                        FullName<span class="req-star">*</span>
                     </div>
                 </label>
-                <span asp-validation-for="AccountName"></span>
+                <span asp-validation-for="FullName"></span>
+            </div> 
+            <div class="custom_input_container ">
+                <input asp-for="Email" type="text" class="custom_floating_input_field" placeholder="Enter Your Email" required>
+                <label asp-for="Email" class="custom_floating_label">
+                    <div class="custom_floating_label_dev">
+                        Email<span class="req-star">*</span>
+                    </div>
+                </label>
+                <span asp-validation-for="Email"></span>
             </div>
             <div class="custom_input_container ">
-                <input asp-for="ParentId" type="text"  class="custom_floating_input_field" placeholder="Enter Your Parent Account">
-                <label asp-for="ParentId"  class="custom_floating_label">
+                <input asp-for="Password" type="text" class="custom_floating_input_field" placeholder="Enter Your Password" required>
+                <label asp-for="Password" class="custom_floating_label">
                     <div class="custom_floating_label_dev">
-                        Parent Account (Optional)
+                        Password<span class="req-star">*</span>
                     </div>
                 </label>
+                <span asp-validation-for="Email"></span>
+            </div>
+
+            <div id="select-label-container" style="margin-bottom:28px;">
+                <div style="position: relative;">
+                    <label asp-for="SelectedRoleId" class="select-label" style="background-color:white; color:#6A6678; font-size:12px;">
+                        <div class="custom_floating_label_dev">
+                            Role<span class="req-star">*</span>
+                        </div>
+                    </label>
+                    <select asp-for="SelectedRoleId" class="custom_floating_input_field custom_floating_select_field">
+                        <option value="">Select Role</option>
+                        @foreach (var role in Model.Roles)
+                        {
+                            <option value="@role.RoleId">@role.RoleName</option>
+                        }
+                     </select>
+                 </div>
             </div>
 
 

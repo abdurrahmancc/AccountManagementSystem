@@ -6,14 +6,43 @@ namespace AccountManagementSystem.Models
     {
 
         [Key]
-        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
 
         [Required]
-        public string AccountName { get; set; }
+        public string FullName { get; set; }
+        [Required]
+        public string Email { get; set; }
+        [Required]
+        public string Password { get; set; }
+        [Required]
+        public Guid Role { get; set; }
+    }
+    public class AccountViewModel
+    {
 
-        public Guid? ParentId { get; set; }
+        [Key]
+        public Guid UserId { get; set; }
 
-        public AccountsModel Parent { get; set; }
+        [Required]
+        public string FullName { get; set; }
+        [Required]
+        public string Email { get; set; }
+        [Required]
+        public string Password { get; set; }
+        public string SelectedRoleId { get; set; }
+        public List<RoleModel> Roles { get; set; }
+    }
+
+    public class RoleModel
+    {
+        public Guid RoleId { get; set; }
+        public string RoleName { get; set; }
+    }
+
+    public class RoleViewModel
+    {
+        public string SelectedRoleId { get; set; }
+        public List<RoleModel> Roles { get; set; }
     }
 
 }
