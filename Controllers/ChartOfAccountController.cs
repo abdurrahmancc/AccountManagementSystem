@@ -19,8 +19,8 @@ namespace AccountManagementSystem.Controllers
         public async Task<IActionResult> Index()
         {
             var allAccounts = await GetAllAccountsAsync();
-            ViewBag.tree = BuildTree(allAccounts);
-            return View();
+            var treeData = BuildTree(allAccounts);
+            return View(treeData);
         }
 
 
@@ -43,7 +43,11 @@ namespace AccountManagementSystem.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return View(model);
+                var viewModel = new ChartOfAccountCreateViewModel
+                {
+                    ParentList = GetParentChartOfAccounts()
+                };
+                return View(viewModel);
             }
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -77,8 +81,6 @@ namespace AccountManagementSystem.Controllers
                     cmd.Parameters.AddWithValue("@IsLastLevel", model.IsLastLevel);
                     cmd.Parameters.AddWithValue("@IsParent", model.IsParent);
                     cmd.Parameters.AddWithValue("@Description", (object)model.Description ?? DBNull.Value);
-
-                    // এখানে মূল userId ব্যাবহার করো createdBy এর জন্য
                     if (!string.IsNullOrEmpty(userId))
                     {
                         cmd.Parameters.AddWithValue("@CreatedBy", Guid.Parse(userId));
@@ -96,7 +98,7 @@ namespace AccountManagementSystem.Controllers
                 }
             }
 
-            return RedirectToAction("Create");
+            return RedirectToAction("Index", "ChartOfAccount");
         }
 
         public async Task<List<ViewChartOfAccountModel>> GetAllAccountsAsync()
@@ -123,6 +125,81 @@ namespace AccountManagementSystem.Controllers
             }
             return accounts;
         }
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetNextAccountCode(int? parentId)
+        {
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                await conn.OpenAsync();
+
+                string newCode = "";
+
+                if (parentId.HasValue)
+                {
+                    string parentCode = "";
+
+                    // 1. Get parent code
+                    using (SqlCommand getParentCodeCmd = new SqlCommand("SELECT Code FROM ChartOfAccount WHERE Id = @ParentId", conn))
+                    {
+                        getParentCodeCmd.Parameters.AddWithValue("@ParentId", parentId.Value);
+                        var parentCodeResult = await getParentCodeCmd.ExecuteScalarAsync();
+                        parentCode = parentCodeResult?.ToString() ?? "";
+                    }
+
+                    // 2. Get max child suffix under this parent
+                    using (SqlCommand getMaxChildCodeCmd = new SqlCommand(
+                        "SELECT MAX(Code) FROM ChartOfAccount WHERE ParentId = @ParentId AND Code LIKE @CodePrefix + '%'", conn))
+                    {
+                        getMaxChildCodeCmd.Parameters.AddWithValue("@ParentId", parentId.Value);
+                        getMaxChildCodeCmd.Parameters.AddWithValue("@CodePrefix", parentCode);
+
+                        var maxChildCodeResult = await getMaxChildCodeCmd.ExecuteScalarAsync();
+
+                        int nextSuffix = 1;
+
+                        if (maxChildCodeResult != null && maxChildCodeResult != DBNull.Value)
+                        {
+                            string lastCode = maxChildCodeResult.ToString();
+
+                            // extract suffix part only
+                            string suffix = lastCode.Substring(parentCode.Length);
+                            if (int.TryParse(suffix, out int parsedSuffix))
+                            {
+                                nextSuffix = parsedSuffix + 1;
+                            }
+                        }
+
+                        newCode = parentCode + nextSuffix.ToString("D2"); // Always 2 digits
+                    }
+                }
+                else
+                {
+                    // Root level
+                    using (SqlCommand getMaxRootCodeCmd = new SqlCommand("SELECT MAX(Code) FROM ChartOfAccount WHERE ParentId IS NULL", conn))
+                    {
+                        var maxRootCodeResult = await getMaxRootCodeCmd.ExecuteScalarAsync();
+                        int nextRootCode = 1;
+
+                        if (maxRootCodeResult != null && maxRootCodeResult != DBNull.Value)
+                        {
+                            if (int.TryParse(maxRootCodeResult.ToString(), out int parsed))
+                            {
+                                nextRootCode = parsed + 1;
+                            }
+                        }
+
+                        newCode = nextRootCode.ToString("D2"); // Always 2 digits
+                    }
+                }
+
+                return Json(new { code = newCode });
+            }
+        }
+
+
 
         private List<ViewChartOfAccountModel> BuildTree(List<ViewChartOfAccountModel> flatList, int? parentId = null)
         {

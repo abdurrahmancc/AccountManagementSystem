@@ -279,11 +279,6 @@
 
 
             <div style="display:flex; justify-content:space-between">
-                <div class="form-check">
-                    <input asp-for="IsActive" class="form-check-input" type="checkbox" />
-                    <label asp-for="IsActive" class="form-check-label">Is Active</label>
-                    <span asp-validation-for="IsActive" ></span>
-                </div>
                 <div class="custom_input_container form-check">
                     <label asp-for="IsLastLevel" class="form-check-label"> Is Last Level</label>
                     <input asp-for="IsLastLevel" class="form-check-input" required />
@@ -291,7 +286,7 @@
 
                 <div class="custom_input_container form-check">
                     <label asp-for="IsParent" class="form-check-label">Is Parent</label>
-                    <input asp-for="IsParent" class="form-check-input" />
+                    <input asp-for="IsParent" class="form-check-input" checked />
                 </div>
             </div>
 
@@ -305,69 +300,28 @@
 </div>
 
 
-<div style="">
-    <div>
-        first 1
-    </div>
-    <div style="display:flex;margin-top:14px;">
-        <div style="margin-left:20px;">
-            <div style="height:40px; width:3px; background-color:#000;"></div>
-            <div style="height:3px; width:100px; background-color:#000;"></div>
-        </div>
-        <div>
-            <div style="padding:12px 20px; height: 50px; margin-top: 15px;">
-                second 1
-            </div>
-            <div style="display:flex;margin-top:14px;">
-                <div style="margin-left:20px;">
-                    <div style="height:40px; width:3px; background-color:#000;"></div>
-                    <div style="height:3px; width:100px; background-color:#000;"></div>
-                </div>
-                <div>
-                    <div style="padding:12px 20px; height: 50px; margin-top: 15px;">
-                        second 1
-                    </div>
-                    <div style="display:flex;margin-top:14px;">
-                        <div style="margin-left:20px;">
-                            <div style="height:40px; width:3px; background-color:#000;"></div>
-                            <div style="height:3px; width:100px; background-color:#000;"></div>
-                        </div>
-                        <div>
-                            <div style="padding:12px 20px; height: 50px; margin-top: 15px;">
-                                second 1
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div style="padding:12px 20px; height: 50px; margin-top: 15px;">
-                second 1
-            </div>
-            <div style="display:flex;margin-top:14px;">
-                <div style="margin-left:20px;">
-                    <div style="height:40px; width:3px; background-color:#000;"></div>
-                    <div style="height:3px; width:100px; background-color:#000;"></div>
-                </div>
-                <div>
-                    <div style="padding:12px 20px; height: 50px; margin-top: 15px;">
-                        second 1
-                    </div>
-                    <div style="display:flex;margin-top:14px;">
-                        <div style="margin-left:20px;">
-                            <div style="height:40px; width:3px; background-color:#000;"></div>
-                            <div style="height:3px; width:100px; background-color:#000;"></div>
-                        </div>
-                        <div>
-                            <div style="padding:12px 20px; height: 50px; margin-top: 15px;">
-                                second 1
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-   </div>
+<script>
+    const isLastLevel = document.getElementById("IsLastLevel");
+    const isParent = document.getElementById("IsParent");
 
-</div>
+    isLastLevel.addEventListener("change", function() {
+      if (this.checked) {
+        isParent.checked = false;
+      }
+    });
 
-            
+    isParent.addEventListener("change", function() {
+      if (this.checked) {
+        isLastLevel.checked = false;
+      }
+    });
+
+    document.querySelector("select[name='ParentId']").addEventListener("change", function () {
+        var parentId = this.value;
+        fetch(`/ChartOfAccount/GetNextAccountCode?parentId=${parentId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("Code").value = data.code;
+            });
+    });
+</script>

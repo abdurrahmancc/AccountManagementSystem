@@ -1,5 +1,33 @@
-﻿@model ViewChartOfAccountModel
+﻿@model List<AccountManagementSystem.Models.ViewChartOfAccountModel>
 
+@using Microsoft.AspNetCore.Html
+@using System.Text
+
+<h2>Chart of Accounts</h2>
+
+<div class="tree">
+    @Html.Raw(RenderTree(Model))
+</div>
+
+@functions {
+    public HtmlString RenderTree(List<AccountManagementSystem.Models.ViewChartOfAccountModel> items)
+    {
+        var sb = new StringBuilder();
+        sb.Append("<ul>");
+        foreach (var item in items)
+        {
+            sb.Append("<li>");
+            sb.Append(item.AccountHead);
+            if (item.Children != null && item.Children.Any())
+            {
+                sb.Append(RenderTree(item.Children));
+            }
+            sb.Append("</li>");
+        }
+        sb.Append("</ul>");
+        return new HtmlString(sb.ToString());
+    }
+}
 
 <style>
     .tree, .tree ul {
@@ -42,22 +70,3 @@
                 border-top: 1px solid #ccc;
             }
 </style>
-
-
-
-<h1>AccountHead</h1>
-
-
-<li>
-    <span>@Model.AccountHead</span>
-
-    @if (Model.Children != null && Model.Children.Any())
-    {
-        <ul>
-            @foreach (var child in Model.Children)
-            {
-                @Html.Partial("_AccountTreePartial", child)
-            }
-        </ul>
-    }
-</li>

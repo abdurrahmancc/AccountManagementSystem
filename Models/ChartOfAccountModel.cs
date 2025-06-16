@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 
 namespace AccountManagementSystem.Models
 {
     public class ChartOfAccountModel
     {
         public int? ParentId { get; set; }
+        [Required(ErrorMessage = "Please Enter Account Head")]
         public string AccountHead { get; set; } = string.Empty;
         public string Code { get; set; } = string.Empty;
         public bool IsLastLevel { get; set; }

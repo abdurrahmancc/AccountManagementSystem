@@ -1,4 +1,11 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using System.Security.Claims
+
+@{
+    var isLoggedIn = User.Identity.IsAuthenticated;
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -7,7 +14,7 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AccountManagementSystem.styles.css" asp-append-version="true" />
-   
+
 </head>
 <body>
     <header>
@@ -23,19 +30,25 @@
                             <a class="nav-link text-dark" asp-controller="Accounts" asp-action="Index">Accounts</a>
                         </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="SignIn" asp-action="Index">SignIn</a>
-                        </li> 
+
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-controller="ChartOfAccount" asp-action="Create">ChartOfAC</a>
                         </li>
                     </ul>
-                    <form asp-controller="SignIn" asp-action="Logout" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-danger">
-                            <i class="bi bi-box-arrow-right"></i> Logout
+                    @if (isLoggedIn)
+                    {
+                        <form asp-controller="SignIn" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <button class="btn btn-danger">
+                            <a class="nav-link text-dark p-0 text-white" asp-controller="SignIn" asp-action="Index">SignIn</a>
                         </button>
-                    </form>
-
+                    }
                 </div>
             </div>
         </nav>
