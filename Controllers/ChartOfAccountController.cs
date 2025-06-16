@@ -16,6 +16,15 @@ namespace AccountManagementSystem.Controllers
                 _configuration = configuration;
             }
 
+        public async Task<IActionResult> Index()
+        {
+            var allAccounts = await GetAllAccountsAsync();
+            ViewBag.tree = BuildTree(allAccounts);
+            return View();
+        }
+
+
+
         [HttpGet]
         public IActionResult Create()
         {
@@ -90,7 +99,43 @@ namespace AccountManagementSystem.Controllers
             return RedirectToAction("Create");
         }
 
+        public async Task<List<ViewChartOfAccountModel>> GetAllAccountsAsync()
+        {
+            var accounts = new List<ViewChartOfAccountModel>();
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                using (SqlCommand cmd = new SqlCommand("SELECT Id, ParentId, AccountHead FROM ChartOfAccount", conn))
+                {
+                    conn.Open();
+                    using (var reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (await reader.ReadAsync())
+                        {
+                            accounts.Add(new ViewChartOfAccountModel
+                            {
+                                Id = reader.GetInt32(0),
+                                ParentId = reader.IsDBNull(1) ? null : reader.GetInt32(1),
+                                AccountHead = reader.GetString(2)
+                            });
+                        }
+                    }
+                }
+            }
+            return accounts;
+        }
 
+        private List<ViewChartOfAccountModel> BuildTree(List<ViewChartOfAccountModel> flatList, int? parentId = null)
+        {
+            return flatList
+                .Where(x => x.ParentId == parentId)
+                .Select(x => new ViewChartOfAccountModel
+                {
+                    Id = x.Id,
+                    ParentId = x.ParentId,
+                    AccountHead = x.AccountHead,
+                    Children = BuildTree(flatList, x.Id)
+                }).ToList();
+        }
 
 
         private List<SelectListItem> GetParentChartOfAccounts()
