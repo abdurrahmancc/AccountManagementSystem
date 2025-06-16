@@ -18,7 +18,7 @@ namespace AccountManagementSystem.Controllers
         }
 
         [HttpGet]
-        //[Authorize(Roles = "Admin,Viewer,Moderator")]
+        [Authorize(Roles = "Admin,Viewer,Moderator")]
         public IActionResult Index()
         {
             List<AccountsModel> accounts = new List<AccountsModel>();
@@ -50,6 +50,7 @@ namespace AccountManagementSystem.Controllers
 
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             var model = new AccountViewModel
@@ -62,8 +63,15 @@ namespace AccountManagementSystem.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(AccountViewModel model)
         {
+            model.Roles = GetAllRoles();
             if (!ModelState.IsValid)
             {
+                return View(model);
+            }
+            bool emailExists = CheckEmailExists(model.Email);
+            if (emailExists)
+            {              
+                ModelState.AddModelError("Email", "This email is already taken.");
                 return View(model);
             }
 
@@ -88,6 +96,20 @@ namespace AccountManagementSystem.Controllers
             }
 
             return RedirectToAction("Index");
+        }
+
+
+        private bool CheckEmailExists(string email)
+        {
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                string query = "SELECT COUNT(*) FROM AspNetUsers WHERE Email = @Email";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@Email", email);
+                conn.Open();
+                int count = (int)cmd.ExecuteScalar();
+                return count > 0;
+            }
         }
 
         private List<RoleModel> GetAllRoles()

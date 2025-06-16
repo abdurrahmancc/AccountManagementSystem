@@ -7,12 +7,13 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AccountManagementSystem.styles.css" asp-append-version="true" />
+   
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
             <div class="container">
-                <a class="navbar-brand" href="#">Navbar</a>
+                <a class="navbar-brand" href="/">AMS</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -23,13 +24,18 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="SignUp" asp-action="Index">SignUp</a>
+                            <a class="nav-link text-dark" asp-controller="SignIn" asp-action="Index">SignIn</a>
+                        </li> 
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="ChartOfAccount" asp-action="Create">ChartOfAC</a>
                         </li>
                     </ul>
-                    <form class="d-flex">
-                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    <form asp-controller="SignIn" asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
                     </form>
+
                 </div>
             </div>
         </nav>

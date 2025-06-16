@@ -1,6 +1,4 @@
-﻿@model AccountManagementSystem.Models.AccountViewModel
-
-
+﻿@model ChartOfAccountCreateViewModel
 <style>
     .select-label {
         position: absolute;
@@ -214,10 +212,10 @@
 
 
     .custom_floating_select_field {
-        appearance: none; 
+        appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
-        padding-right: 2rem; 
+        padding-right: 2rem;
         background-image: url('/icons/down-arrow-icon.svg');
         background-repeat: no-repeat;
         background-position: right 0.75rem center;
@@ -228,61 +226,148 @@
 
 <div style="display:flex; flex-direction:column; margin-top: 100px;">
     <form asp-action="Create" method="post" id="create_account_form" novalidate style="max-width: 495px; margin:auto;" class="custome-floating_form_parent">
-    <h2 style="margin-bottom: 40px;">Create User</h2>
+        @Html.AntiForgeryToken()
+        <h2 style="margin-bottom: 40px;">Chart Of Account Setup</h2>
         <div class="" style="width: 100%;">
+
             <div class="custom_input_container ">
-                <input asp-for="FullName" type="text"  class="custom_floating_input_field" placeholder="Full Name" required>
-                <label asp-for="FullName" class="custom_floating_label">
+                <input asp-for="AccountHead" class="custom_floating_input_field" placeholder="" required />
+                <span asp-validation-for="AccountHead" class="text-danger"></span>
+                <label asp-for="AccountHead" class="custom_floating_label">
                     <div class="custom_floating_label_dev">
-                        FullName<span class="req-star">*</span>
+                        Account Head<span class="req-star">*</span>
                     </div>
                 </label>
-                <span asp-validation-for="FullName"></span>
-            </div> 
-            <div class="custom_input_container ">
-                <input asp-for="Email" type="text" class="custom_floating_input_field" placeholder="Enter Your Email" required>
-                <label asp-for="Email" class="custom_floating_label">
-                    <div class="custom_floating_label_dev">
-                        Email<span class="req-star">*</span>
-                    </div>
-                </label>
-                <span asp-validation-for="Email"></span>
             </div>
-            <div class="custom_input_container ">
-                <input asp-for="Password" type="password" class="custom_floating_input_field" placeholder="Enter Your Password" required>
-                <label asp-for="Password" class="custom_floating_label">
-                    <div class="custom_floating_label_dev">
-                        Password<span class="req-star">*</span>
-                    </div>
-                </label>
-                <span asp-validation-for="Password"></span>
-            </div>
+
 
             <div id="select-label-container" style="margin-bottom:28px;">
                 <div style="position: relative;">
-                    <label asp-for="SelectedRoleId" class="select-label" style="background-color:white; color:#6A6678; font-size:12px;">
-                        <div class="custom_floating_label_dev">
-                            Role<span class="req-star">*</span>
-                        </div>
+                    <label asp-for="ParentId" class="select-label" style="background-color:white; color:#6A6678; font-size:12px;">
+                        Parent Head
                     </label>
-                    <select asp-for="SelectedRoleId" class="custom_floating_input_field custom_floating_select_field">
-                        <option value="" disabled selected>Select Role</option>
-                        @foreach (var role in Model.Roles)
+                    <select asp-for="ParentId" class="custom_floating_input_field custom_floating_select_field">
+                        <option value="" disabled selected>Select Parent</option>
+                        @foreach (var parent in Model.ParentList)
                         {
-                            <option value="@role.RoleId">@role.RoleName</option>
+                            <option value="@parent.Value">@parent.Text</option>
                         }
-                     </select>
-                    <span asp-validation-for="SelectedRoleId"></span>
-                 </div>
+                    </select>
+                    <span asp-validation-for="ParentId"></span>
+                </div>
             </div>
 
+
+
+            <div class="custom_input_container ">
+                <input asp-for="Code" class="custom_floating_input_field" placeholder="" required />
+                <span asp-validation-for="Code"></span>
+                <label asp-for="Code" class="custom_floating_label">
+                    <div class="custom_floating_label_dev">
+                       Code <span class="req-star">*</span>
+                    </div>
+                </label>
+            </div>
+
+
+            <div class="custom_input_container">
+                <label asp-for="Description"></label>
+                <textarea asp-for="Description" class="custom_floating_input_field" rows="3" placeholder="Enter Description"></textarea>
+                <span asp-validation-for="Description" ></span>
+            </div>
+
+
+
+            <div style="display:flex; justify-content:space-between">
+                <div class="form-check">
+                    <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                    <label asp-for="IsActive" class="form-check-label">Is Active</label>
+                    <span asp-validation-for="IsActive" ></span>
+                </div>
+                <div class="custom_input_container form-check">
+                    <label asp-for="IsLastLevel" class="form-check-label"> Is Last Level</label>
+                    <input asp-for="IsLastLevel" class="form-check-input" required />
+                </div>
+
+                <div class="custom_input_container form-check">
+                    <label asp-for="IsParent" class="form-check-label">Is Parent</label>
+                    <input asp-for="IsParent" class="form-check-input" />
+                </div>
+            </div>
 
             <div class="w-full">
                 <button type="submit" id="custom_submit_submit" class="custom_submit_button">
                     Submit
-                </button>              
+                </button>
             </div>
-        </div>
-
+       </div>
     </form>
 </div>
+
+
+<div style="">
+    <div>
+        first 1
+    </div>
+    <div style="display:flex;margin-top:14px;">
+        <div style="margin-left:20px;">
+            <div style="height:40px; width:3px; background-color:#000;"></div>
+            <div style="height:3px; width:100px; background-color:#000;"></div>
+        </div>
+        <div>
+            <div style="padding:12px 20px; height: 50px; margin-top: 15px;">
+                second 1
+            </div>
+            <div style="display:flex;margin-top:14px;">
+                <div style="margin-left:20px;">
+                    <div style="height:40px; width:3px; background-color:#000;"></div>
+                    <div style="height:3px; width:100px; background-color:#000;"></div>
+                </div>
+                <div>
+                    <div style="padding:12px 20px; height: 50px; margin-top: 15px;">
+                        second 1
+                    </div>
+                    <div style="display:flex;margin-top:14px;">
+                        <div style="margin-left:20px;">
+                            <div style="height:40px; width:3px; background-color:#000;"></div>
+                            <div style="height:3px; width:100px; background-color:#000;"></div>
+                        </div>
+                        <div>
+                            <div style="padding:12px 20px; height: 50px; margin-top: 15px;">
+                                second 1
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="padding:12px 20px; height: 50px; margin-top: 15px;">
+                second 1
+            </div>
+            <div style="display:flex;margin-top:14px;">
+                <div style="margin-left:20px;">
+                    <div style="height:40px; width:3px; background-color:#000;"></div>
+                    <div style="height:3px; width:100px; background-color:#000;"></div>
+                </div>
+                <div>
+                    <div style="padding:12px 20px; height: 50px; margin-top: 15px;">
+                        second 1
+                    </div>
+                    <div style="display:flex;margin-top:14px;">
+                        <div style="margin-left:20px;">
+                            <div style="height:40px; width:3px; background-color:#000;"></div>
+                            <div style="height:3px; width:100px; background-color:#000;"></div>
+                        </div>
+                        <div>
+                            <div style="padding:12px 20px; height: 50px; margin-top: 15px;">
+                                second 1
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+   </div>
+
+</div>
+
+            

@@ -1,9 +1,12 @@
 ﻿using AccountManagementSystem.DTOs;
 using AccountManagementSystem.Helpers;
 using AccountManagementSystem.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Security.Claims;
 
 namespace AccountManagementSystem.Controllers.Auth
 {
@@ -26,12 +29,13 @@ namespace AccountManagementSystem.Controllers.Auth
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Index([FromBody] SignInModel dto)
+        public async Task<IActionResult> Index([FromBody] SignInModel dto)
         {
             if (!ModelState.IsValid)
             {
                 return Json(new { token = "" });
             }
+            AccountsModel user = null;
 
             try
             {
@@ -48,7 +52,27 @@ namespace AccountManagementSystem.Controllers.Auth
                         {
                             if (reader.Read())
                             {
+                                user = new AccountsModel
+                                {
+                                    UserId = reader.GetGuid(0),
+                                    Email = reader.GetString(1),
+                                    FullName = reader.GetString(2),
+                                    Role = reader.GetGuid(3)
+                                };
                                 var tokenValue = _jwtService.GenerateJwtToken(dto.Email);
+                                var claims = new List<Claim>
+                                    {
+                                        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                                        new Claim(ClaimTypes.Email, user.Email),
+                                        new Claim(ClaimTypes.Name, user.FullName),
+                                        new Claim(ClaimTypes.Role, "Admin")
+                                    };
+
+                                var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                                var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+                                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+
                                 return Json(new { token = tokenValue });
                             }
                             else
@@ -65,6 +89,13 @@ namespace AccountManagementSystem.Controllers.Auth
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync();
+            return RedirectToAction("Index", "SignIn");
+        }
 
     }
 }
