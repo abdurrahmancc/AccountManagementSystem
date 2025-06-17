@@ -1,0 +1,82 @@
+﻿@model List<ApplicationPageModel>
+
+@{
+    ViewData["Title"] = "Manage Pages";
+}
+
+<h2>Manage Application Pages</h2>
+
+<form asp-action="Save" method="post" class="row g-3 mb-4" id="pageForm">
+    <input type="hidden" id="PageId" name="PageId" value="0" />
+
+    <div class="col-md-4">
+        <label for="PageName" class="form-label">Page Name</label>
+        <input type="text" id="PageName" name="PageName" class="form-control" required />
+    </div>
+
+    <div class="col-md-4">
+        <label for="PageUrl" class="form-label">Page URL</label>
+        <input type="text" id="PageUrl" name="PageUrl" class="form-control" />
+    </div>
+
+    <div class="col-md-4">
+        <label for="Description" class="form-label">Description</label>
+        <input type="text" id="Description" name="Description" class="form-control" />
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Create</button>
+        <button type="button" class="btn btn-secondary" onclick="resetForm()">Clear</button>
+    </div>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Page Name</th>
+            <th>Page URL</th>
+            <th>Description</th>
+            <th>Created At</th>
+            <th>Updated At</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var info in Model)
+        {
+            <tr>
+                <td>@info.PageName</td>
+                <td>@info.PageUrl</td>
+                <td>@info.Description</td>
+                <td>@info.CreatedAt.ToString("yyyy-MM-dd")</td>
+                <td>@info.UpdatedAt?.ToString("yyyy-MM-dd")</td>
+                <td>
+                    <button type="button" class="btn btn-primary btn-sm" 
+                        onclick="editPage(@info.PageId, '@info.PageName', '@info.PageUrl', '@info.Description')">
+                        Edit
+                    </button>
+                    <form asp-action="Delete" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@info.PageId" />
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script>
+    function editPage(id, name, url, description) {
+        document.getElementById('PageId').value = id;
+        document.getElementById('PageName').value = name;
+        document.getElementById('PageUrl').value = url;
+        document.getElementById('Description').value = description;
+    }
+
+    function resetForm() {
+        document.getElementById('PageId').value = 0;
+        document.getElementById('PageName').value = '';
+        document.getElementById('PageUrl').value = '';
+        document.getElementById('Description').value = '';
+    }
+</script>

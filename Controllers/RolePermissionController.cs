@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System;
 using System.Data;
+using System.Security.Claims;
 
 
 public class RolePermissionController : Controller
@@ -21,19 +22,23 @@ public class RolePermissionController : Controller
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+
+        var updatedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
         using (var conn = new SqlConnection(_connectionString))
         {
             using (var cmd = new SqlCommand("sp_ManageRolePermission", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
 
-                cmd.Parameters.AddWithValue("@Action", model.Id == 0 ? "INSERT" : "UPDATE");
+                string action = model.Id == 0 ? "INSERT" : "UPDATE"; 
+
+                cmd.Parameters.AddWithValue("@Action", action);
                 cmd.Parameters.AddWithValue("@Id", model.Id);
                 cmd.Parameters.AddWithValue("@RoleId", model.RoleId);
                 cmd.Parameters.AddWithValue("@PageName", model.PageName ?? (object)DBNull.Value);
                 cmd.Parameters.AddWithValue("@IsAllowed", model.IsAllowed);
                 cmd.Parameters.AddWithValue("@CreatedAt", model.CreatedAt == DateTime.MinValue ? DateTime.Now : model.CreatedAt);
-                cmd.Parameters.AddWithValue("@UpdatedBy", model.UpdatedBy ?? (object)DBNull.Value);
+                cmd.Parameters.AddWithValue("@UpdatedBy", updatedBy);
 
                 await conn.OpenAsync();
                 await cmd.ExecuteNonQueryAsync();
@@ -42,6 +47,7 @@ public class RolePermissionController : Controller
 
         return Ok(new { success = true });
     }
+
 
     // Delete - POST
     [HttpPost]
@@ -67,18 +73,18 @@ public class RolePermissionController : Controller
         return Ok(new { success = true });
     }
 
-    // Optional: List all RolePermissions (Read)
     public async Task<IActionResult> Index()
     {
         var rolePermissions = new List<RolePermissionModel>();
-        var roles = new List<RoleModel>(); // RoleModel = RoleId + RoleName রাখবে
+        var roles = new List<RoleModel>();
+        var pages = new List<ApplicationPageModel>();
 
         using (var conn = new SqlConnection(_connectionString))
         {
             await conn.OpenAsync();
 
-            // RolePermissions SP
-            using (var cmd = new SqlCommand("sp_ManageRolePermission", conn))
+            // RolePermissions লোড
+            using (var cmd = new SqlCommand("sp_GetAllRolePermissions", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
 
@@ -99,7 +105,7 @@ public class RolePermissionController : Controller
                 }
             }
 
-            // Roles SP
+            // Roles লোড
             using (var cmdRoles = new SqlCommand("sp_GetAllRoles", conn))
             {
                 cmdRoles.CommandType = CommandType.StoredProcedure;
@@ -116,17 +122,32 @@ public class RolePermissionController : Controller
                     }
                 }
             }
+
+            // ✅ ApplicationPages লোড
+            using (var cmdPages = new SqlCommand("SELECT PageName FROM ApplicationPages", conn))
+            {
+                using (var readerPages = await cmdPages.ExecuteReaderAsync())
+                {
+                    while (await readerPages.ReadAsync())
+                    {
+                        pages.Add(new ApplicationPageModel
+                        {
+                            PageName = readerPages["PageName"].ToString()
+                        });
+                    }
+                }
+            }
         }
 
-        // ViewModel-এ দুইটা লিস্ট পাঠাও
-        var vm = new RolePermissionsViewModel
-        {
-            RolePermissions = rolePermissions,
-            Roles = roles
-        };
+        ViewBag.Roles = roles;
+        ViewBag.Pages = pages;
+        ViewBag.RolePermissions = rolePermissions;
 
-        return View(vm);
+        return View();
     }
+
+
+
 
 
 }

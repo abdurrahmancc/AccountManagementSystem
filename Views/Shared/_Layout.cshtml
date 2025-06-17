@@ -1,5 +1,12 @@
-﻿@using Microsoft.AspNetCore.Identity
+﻿@using AccountManagementSystem.data
+@using Microsoft.AspNetCore.Identity
 @using System.Security.Claims
+@inject AppDbContext _context
+
+@{
+    var pagesTask = _context.GetApplicationPagesAsync();
+}
+
 
 @{
     var isLoggedIn = User.Identity.IsAuthenticated;
@@ -14,56 +21,182 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/AccountManagementSystem.styles.css" asp-append-version="true" />
+    <style>
+        body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        }
 
+        .sidebar {
+        height: 100vh;
+        width: 250px;
+        background-color: #39435C;
+        position: fixed;
+        top: 0;
+        left: 0;
+        padding-top: 20px;
+        overflow-y: auto;
+        transition: transform 0.3s ease;
+        z-index: 999;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            font-size: 16px;
+            border-bottom: 1px solid #4d6173;
+            transition: background-color 0.1s linear, color 0.3s linear, transform 0.1s linear;
+        }
+
+
+    .sidebar a:hover {
+        background-color: #34495e;
+        color: #1abc9c;
+    }
+
+    .content {
+        margin-left: 250px;
+        padding: 32px;
+        transition: margin-left 0.3s ease;
+    }
+
+
+    .toggle-btn {
+        display: none;
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        background-color: #2c3e50;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        z-index: 1000;
+    }
+
+        .sidebar::-webkit-scrollbar {
+        width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+        background: #2c3e50;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+        background-color: #1abc9c;
+        border-radius: 3px;
+        }
+
+
+        @@media (max-width: 768px) {
+        .sidebar
+
+        {
+        transform: translateX(-100%);
+        }
+
+        .sidebar.active {
+        transform: translateX(0);
+        }
+
+        .content {
+        margin-left: 0;
+        }
+
+        .toggle-btn {
+        display: block;
+        }
+
+        }
+
+        .log-button {
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #1abc9c;
+            color: white;
+            font-size: 16px;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .log-button a{
+            transition: none !important;
+            border-bottom: none !important;
+        }
+
+        .log-button:hover {
+            background-color: #1abc9c;
+            color: #ffffff;
+        }
+
+        .log-button a:hover {
+            background-color: #1abc9c;
+            color: #ffffff;
+        }
+
+        .log-button:focus {
+            outline: none;
+            outline-offset: unset;
+        }
+
+        .log-button a:focus {
+            outline: none;
+            outline-offset: unset;
+        }
+
+    </style>
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-light" style="background-color: #e3f2fd;">
-            <div class="container">
-                <a class="navbar-brand" href="/">AMS</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+<body style="background-color:#ecf0f4;">
+    
+    <div style="display:flex;">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+    </div>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <h2 style="text-align:center; margin-bottom: 15px;">AMS</h2>
+            @foreach (var item in await pagesTask)
+            {
+                var pageUrl = item.PageUrl.StartsWith("/") ? item.PageUrl : "/" + item.PageUrl;
+                <a class="" style="cursor:pointer" href="@pageUrl">@item.PageName</a>
+            }                       
+        </div>
+        <div>
+            @if (isLoggedIn)
+            {
+                <form asp-controller="SignIn" asp-action="Logout" method="post" class="logout-form">
+                    <button type="submit" class="log-button">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
+                </form>
+            }
+            else
+            {
+                <button class="log-button" style="width: 100%; padding: 12px;">
+                    <a class="nav-link text-dark p-0 text-white" asp-controller="SignIn" asp-action="Index">SignIn</a>
                 </button>
-                <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
-                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="Accounts" asp-action="Index">Accounts</a>
-                        </li>
-
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-controller="ChartOfAccount" asp-action="Create">ChartOfAC</a>
-                        </li>
-                    </ul>
-                    @if (isLoggedIn)
-                    {
-                        <form asp-controller="SignIn" asp-action="Logout" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-danger">
-                                <i class="bi bi-box-arrow-right"></i> Logout
-                            </button>
-                        </form>
-                    }
-                    else
-                    {
-                        <button class="btn btn-danger">
-                            <a class="nav-link text-dark p-0 text-white" asp-controller="SignIn" asp-action="Index">SignIn</a>
-                        </button>
-                    }
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+            }
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container" style="text-align:center">
-            &copy; @DateTime.Now.Year - <strong>Account Management System</strong>
+    <!-- Main Content -->
+    <div class="content" style="height:100vh;">
+        <div style="background-color:#fff; height:100%; padding:32px;">
+            @RenderBody()
         </div>
-    </footer>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById("sidebar");
+            sidebar.classList.toggle("active");
+        }
+    </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

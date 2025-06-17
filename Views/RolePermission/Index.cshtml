@@ -15,25 +15,32 @@
             <input type="hidden" id="Id" name="Id" value="0" />
 
             <div class="col-md-4">
-                <label for="RoleId" class="form-label">RoleId (GUID)</label>
-                <input type="text" class="form-control" id="RoleId" name="RoleId" required />
+                <label for="PageName" class="form-label">Page Name</label>
+                <select id="PageName" name="PageName" class="form-select" required>
+                    <option value="">-- Select Page --</option>
+                    @foreach (var info in ViewBag.Pages as List<AccountManagementSystem.Models.ApplicationPageModel>)
+                    {
+                        <option value="@info.PageName">@info.PageName</option>
+                    }
+                </select>
             </div>
 
             <div class="col-md-4">
-                <label for="PageName" class="form-label">Page Name</label>
-                <input type="text" class="form-control" id="PageName" name="PageName" required />
+                <label for="RoleId" class="form-label">Role</label>
+                <select id="RoleId" name="RoleId" class="form-select" required>
+                    <option value="">-- Select Role --</option>
+                    @foreach (var role in ViewData["Roles"] as List<RoleModel>)
+                    {
+                        <option value="@role.RoleId">@role.RoleName</option>
+                    }
+                </select>
             </div>
 
-            <div class="col-md-2 d-flex align-items-center">
-                <div class="form-check mt-4">
+            <div class="col-12 d-flex align-items-center">
+                <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="IsAllowed" name="IsAllowed" />
                     <label class="form-check-label" for="IsAllowed">Is Allowed</label>
                 </div>
-            </div>
-
-            <div class="col-md-4">
-                <label for="UpdatedBy" class="form-label">Updated By</label>
-                <input type="text" class="form-control" id="UpdatedBy" name="UpdatedBy" />
             </div>
 
             <div class="col-12">
@@ -57,30 +64,40 @@
         </tr>
     </thead>
     <tbody>
-        @for (int i = 0; i < Model.RolePermissions.Count; i++)
-        {
-            var item = Model.RolePermissions[i];
-            <tr>
-                <td>
-                    <select asp-for="@Model.RolePermissions[i].RoleId" class="form-select" name="RolePermissions[@i].RoleId">
-                        <option value="">-- Select Role --</option>
-                        @foreach (var role in Model.Roles)
-                        {
-                            <option value="@role.RoleId">@role.RoleName</option>
-                        }
-                    </select>
-                </td>
-                <td>@item.PageName</td>
-                <td>
-                    <input asp-for="@Model.RolePermissions[i].IsAllowed" type="checkbox" />
-                </td>
-                <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
-                <td>@item.UpdatedBy</td>
-                <td>
-                    <!-- Action buttons like Edit/Delete -->
-                </td>
-            </tr>
+        @{
+            var rolePermissions = ViewBag.RolePermissions as List<RolePermissionModel>;
+            var roles = ViewBag.Roles as List<RoleModel>;
         }
+
+        @if (rolePermissions != null && roles != null)
+        {
+            for (int i = 0; i < rolePermissions.Count; i++)
+            {
+                var item = rolePermissions[i];
+                <tr data-id="@item.Id"
+                    data-roleid="@item.RoleId"
+                    data-pagename="@item.PageName"
+                    data-isallowed="@item.IsAllowed.ToString().ToLower()"
+                    data-updatedby="@item.UpdatedBy">
+                    <td>
+                        @roles.FirstOrDefault(r => r.RoleId == item.RoleId)?.RoleName
+                    </td>
+                    <td>@item.PageName</td>
+                    <td>@(item.IsAllowed ? "Yes" : "No")</td>
+                    <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
+                    <td>@item.UpdatedBy</td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-primary btnEdit">Edit</button>
+                        <button type="button" class="btn btn-sm btn-danger btnDelete">Delete</button>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="6">No data found.</td></tr>
+        }
+
     </tbody>
 </table>
 
@@ -98,7 +115,7 @@
                     PageName: $('#PageName').val(),
                     IsAllowed: $('#IsAllowed').is(':checked'),
                     UpdatedBy: $('#UpdatedBy').val(),
-                    CreatedAt: new Date().toISOString()
+                    CreatedAt: new Date().toISOString() // Optional, can be omitted if you want server to set
                 };
 
                 $.ajax({

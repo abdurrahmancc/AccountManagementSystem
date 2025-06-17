@@ -11,5 +11,14 @@ namespace AccountManagementSystem.data
         }
         public DbSet<AccountsModel> Accounts { get; set; }
 
+        public DbSet<ApplicationPageModel> ApplicationPages { get; set; }
+
+        public async Task<List<ApplicationPageModel>> GetApplicationPagesAsync()
+        {
+            return await ApplicationPages
+                .FromSqlRaw("EXEC sp_ManageApplicationPage @Action = 'SELECT'")
+                .ToListAsync();
+        }
+
     }
 }
