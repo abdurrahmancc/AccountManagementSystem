@@ -40,6 +40,7 @@ namespace AccountManagementSystem.Models
     {
         public int Id { get; set; }
         public int? ParentId { get; set; }
+        public string Code { get; set; }
         public string AccountHead { get; set; }
 
         public List<ViewChartOfAccountModel>? Children { get; set; }

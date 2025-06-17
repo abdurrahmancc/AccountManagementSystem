@@ -1,0 +1,49 @@
+﻿@model IEnumerable<AccountManagementSystem.Models.AccountVoucherDetailsModels>
+
+@{
+    ViewData["Title"] = "Voucher Details";
+    var voucherId = ViewBag.VoucherId;
+}
+
+<h2>Voucher Details</h2>
+
+<a asp-action="Create" asp-route-voucherId="@voucherId" class="btn btn-success mb-2">Add New Detail</a>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Transaction Type</th>
+            <th>Account Head</th>
+            <th>Debit Amount</th>
+            <th>Credit Amount</th>
+            <th>Description</th>
+            <th style="width: 150px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Any())
+        {
+            foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.TransactionType</td>
+                    <td>@item.AccountHeadId</td> @* চাইলে এখানে AccountHeadName দেখাতে পারো *@
+                    <td>@item.DebitAmount.ToString("N2")</td>
+                    <td>@item.CreditAmount.ToString("N2")</td>
+                    <td>@item.Description</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.Id" asp-route-voucherId="@voucherId" class="btn btn-sm btn-primary">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" asp-route-voucherId="@voucherId" class="btn btn-sm btn-danger"
+                           onclick="return confirm('Are you sure you want to delete this detail?');">Delete</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">No details found for this voucher.</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -98,7 +98,7 @@ namespace AccountManagementSystem.Controllers
                 }
             }
 
-            return RedirectToAction("Index", "ChartOfAccount");
+            return RedirectToAction("create", "ChartOfAccount");
         }
 
         public async Task<List<ViewChartOfAccountModel>> GetAllAccountsAsync()
@@ -106,7 +106,7 @@ namespace AccountManagementSystem.Controllers
             var accounts = new List<ViewChartOfAccountModel>();
             using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
-                using (SqlCommand cmd = new SqlCommand("SELECT Id, ParentId, AccountHead FROM ChartOfAccount", conn))
+                using (SqlCommand cmd = new SqlCommand("SELECT Id, ParentId, AccountHead, Code FROM ChartOfAccount", conn))
                 {
                     conn.Open();
                     using (var reader = await cmd.ExecuteReaderAsync())
@@ -117,7 +117,8 @@ namespace AccountManagementSystem.Controllers
                             {
                                 Id = reader.GetInt32(0),
                                 ParentId = reader.IsDBNull(1) ? null : reader.GetInt32(1),
-                                AccountHead = reader.GetString(2)
+                                AccountHead = reader.GetString(2),
+                                Code = reader.GetString(3)
                             });
                         }
                     }
@@ -209,6 +210,7 @@ namespace AccountManagementSystem.Controllers
                 {
                     Id = x.Id,
                     ParentId = x.ParentId,
+                    Code = x.Code,
                     AccountHead = x.AccountHead,
                     Children = BuildTree(flatList, x.Id)
                 }).ToList();

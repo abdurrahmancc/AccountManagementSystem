@@ -1,0 +1,331 @@
+﻿@model AccountManagementSystem.Models.AccountVoucherWithDetailsModel
+
+@{
+    ViewData["Title"] = "Create Voucher";
+}
+
+<h2>Create Voucher</h2>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<form asp-action="Create" method="post" class="mt-3">
+    <!-- Master Voucher Fields -->
+    <div class="form-group mb-3">
+        <label asp-for="VoucherDate">Voucher Date</label>
+        <input asp-for="VoucherDate" type="date" class="form-control" />
+        <span asp-validation-for="VoucherDate" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="VoucherType">Voucher Type</label>
+        <select asp-for="VoucherType" onchange="generateVoucherNumber()" class="form-select" asp-items="Html.GetEnumSelectList<AccountManagementSystem.Enums.VoucherType>()">
+            <option value="">-- Select Voucher Type --</option>
+        </select>
+        <span asp-validation-for="VoucherType" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="VoucherNumber">Voucher No</label>
+        <input asp-for="VoucherNumber" class="form-control" id="VoucherNumber" readonly />
+        <span asp-validation-for="VoucherNumber" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mb-3">
+        <label asp-for="ReferenceNo">Reference No</label>
+        <input asp-for="ReferenceNo" class="form-control" />
+        <span asp-validation-for="ReferenceNo" class="text-danger"></span>
+    </div>
+
+
+    <hr />
+    <h4>Voucher Details</h4>
+
+    <!-- Dynamic Voucher Details Table -->
+    <table class="table" id="voucherDetailsTable">
+        <thead>
+            <tr>
+                <th>Transaction Type</th>
+                <th>Account Head</th>
+                <th>Debit Amount</th>
+                <th>Credit Amount</th>
+                <th>Description</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="voucher-detail-row" >
+                <td>
+                    @* <select name="Details[0].TransactionType" class="form-select transaction-type" id="TransactionType" asp-items="Html.GetEnumSelectList<AccountManagementSystem.Enums.TransactionType>()"> *@
+                    @*     <option value="">-- Select --</option> *@
+                    @* </select> *@
+                    <select name="Details[0].TransactionType"
+                            id="TransactionType_0"
+                            class="form-select transaction-type"
+                            onchange="handleTransactionTypeChange(this)">
+                        <option value="">-- Select --</option>
+                        @* এখানে enum থেকে option গুলো আসবে *@
+                        @foreach (var item in Enum.GetValues(typeof(AccountManagementSystem.Enums.TransactionType)))
+                        {
+                            <option value="@(Convert.ToInt32(item))">@item.ToString()</option>
+                        }
+                    </select>
+
+
+                </td>
+                <td>
+                    <select name="Details[0].AccountHeadId"  class="form-select">
+                        <option value="">-- Select --</option>
+                        @foreach (var item in (IEnumerable<SelectListItem>)ViewBag.AccountHeadList)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                </td>
+                <td><input type="number" step="0.01" name="Details[0].DebitAmount"  class="form-control debit-amount" /></td>
+                <td><input type="number" step="0.01" name="Details[0].CreditAmount"  class="form-control credit-amount" /></td>
+                <td><input type="text" name="Details[0].Description" class="form-control" /></td>
+                <td>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Remove</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <button type="button" class="btn btn-secondary mb-3" onclick="addRow()">Add Detail</button>
+
+    <div class="form-group mb-3">
+        <label asp-for="Note"></label>
+        <textarea asp-for="Note" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Note" class="text-danger"></span>
+    </div>
+
+
+    <br />
+
+    <button type="submit" class="btn btn-primary">Save</button>
+</form>
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+
+    <script>
+        // Voucher Number Generate
+        function generateVoucherNumber() {
+            var voucherType = document.getElementById('VoucherType').value;
+            if (!voucherType) {
+                document.getElementById('VoucherNumber').value = '';
+                return;
+            }
+
+            fetch(`/AccountVoucher/GetNewVoucherNumber?voucherType=${voucherType}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('VoucherNumber').value = data.voucherNumber;
+                })
+                .catch(err => {
+                    console.error('Error fetching voucher number:', err);
+                });
+        }
+
+         function handleTransactionTypeChange(selectElement) {
+            toggleDebitCreditFields(selectElement);
+        }
+
+
+        // Add new detail row
+        function addRow() {
+            const table = document.getElementById('voucherDetailsTable').getElementsByTagName('tbody')[0];
+            const rowCount = table.rows.length;
+            const newRow = table.rows[0].cloneNode(true);
+
+            newRow.querySelectorAll('input, select').forEach(function (input) {
+                // Clear value
+                input.value = '';
+
+                // Update name attribute index
+                const name = input.getAttribute('name');
+                if (name) {
+                    const newName = name.replace(/\[\d+\]/, `[${rowCount}]`);
+                    input.setAttribute('name', newName);
+                }
+
+                // Update id attribute index to keep unique IDs
+                const id = input.getAttribute('id');
+                if (id) {
+                    const baseId = id.split('_')[0]; // আগে যেটা ছিল যেমন TransactionType_0 থেকে TransactionType
+                    const newId = `${baseId}_${rowCount}`;
+                    input.setAttribute('id', newId);
+                }
+            });
+
+            table.appendChild(newRow);
+
+            // নতুন row তে TransactionType change event attach করো
+            const newTransactionSelect = newRow.querySelector('.transaction-type');
+            if (newTransactionSelect) {
+                newTransactionSelect.addEventListener('change', function () {
+                    toggleDebitCreditFields(this);
+                });
+                toggleDebitCreditFields(newTransactionSelect); // নতুন row এর ফিল্ডও সঠিক set করো
+            }
+        }
+
+        // Remove detail row
+        function removeRow(button) {
+            const table = document.getElementById('voucherDetailsTable').getElementsByTagName('tbody')[0];
+            if (table.rows.length > 1) {
+                button.closest('tr').remove();
+                updateRowIndexes();
+            } else {
+                alert('At least one detail row is required.');
+            }
+        }
+
+        // Update all rows' name and id attributes on row removal
+        function updateRowIndexes() {
+            const rows = document.querySelectorAll('#voucherDetailsTable tbody tr');
+
+            rows.forEach((row, i) => {
+                const inputs = row.querySelectorAll('input, select, textarea');
+
+                inputs.forEach(input => {
+                    // Update name attribute index
+                    const name = input.getAttribute('name');
+                    if (name) {
+                        const newName = name.replace(/\[\d+\]/, `[${i}]`);
+                        input.setAttribute('name', newName);
+                    }
+
+                    // Update id attribute index
+                    const id = input.getAttribute('id');
+                    if (id) {
+                        const baseId = id.split('_')[0]; // যেমন TransactionType_2 থেকে TransactionType
+                        const newId = `${baseId}_${i}`;
+                        input.setAttribute('id', newId);
+                    }
+                });
+
+                // Update transaction type onchange for each row after reindexing
+                const transactionSelect = row.querySelector('.transaction-type');
+                if (transactionSelect) {
+                    transactionSelect.removeEventListener('change', onTransactionChangeHandler);
+                    transactionSelect.addEventListener('change', onTransactionChangeHandler);
+                    toggleDebitCreditFields(transactionSelect);
+                }
+            });
+        }
+
+        // On change event handler for transaction-type selects (for attaching/removing events)
+        function onTransactionChangeHandler() {
+            toggleDebitCreditFields(this);
+        }
+
+        // Enable/Disable debit or credit fields based on TransactionType select value
+        function toggleDebitCreditFields(selectElement) {
+            // Extract index from name attribute
+            let name = selectElement.getAttribute("name"); // e.g. Details[0].TransactionType
+            let match = name.match(/Details\[(\d+)\]/);
+            if (!match) return;
+            let index = match[1];
+
+            let debitInput = document.querySelector(`input[name='Details[${index}].DebitAmount']`);
+            let creditInput = document.querySelector(`input[name='Details[${index}].CreditAmount']`);
+
+            if (!debitInput || !creditInput) return;
+
+            let val = selectElement.value;
+
+            if (val === "Debit" || val === "1") { // Debit selected
+                debitInput.disabled = false;
+                creditInput.disabled = true;
+                creditInput.value = '';
+            }
+            else if (val === "Credit" || val === "2") { // Credit selected
+                debitInput.disabled = true;
+                debitInput.value = '';
+                creditInput.disabled = false;
+            }
+            else {
+                // If nothing selected, enable both
+                debitInput.disabled = false;
+                creditInput.disabled = false;
+            }
+        }
+
+        // Validate voucher details on submit
+        function validateVoucherDetails(details) {
+            let debitCount = 0;
+            let creditCount = 0;
+            let totalDebit = 0;
+            let totalCredit = 0;
+
+            for (let d of details) {
+                if (d.TransactionType === 'Debit' || d.TransactionType === '1') {
+                    debitCount++;
+                    totalDebit += parseFloat(d.DebitAmount) || 0;
+
+                    if ((parseFloat(d.CreditAmount) || 0) > 0) {
+                        return { valid: false, message: "Debit row can't have Credit amount." };
+                    }
+                }
+                else if (d.TransactionType === 'Credit' || d.TransactionType === '2') {
+                    creditCount++;
+                    totalCredit += parseFloat(d.CreditAmount) || 0;
+
+                    if ((parseFloat(d.DebitAmount) || 0) > 0) {
+                        return { valid: false, message: "Credit row can't have Debit amount." };
+                    }
+                }
+                else {
+                    return { valid: false, message: "Invalid Transaction Type found." };
+                }
+            }
+
+            // Multiple Debit and Multiple Credit both not allowed together
+            if (debitCount > 1 && creditCount > 1) {
+                return { valid: false, message: "Multiple Debit and Multiple Credit rows cannot exist together." };
+            }
+
+            // Total debit must equal total credit
+            if (totalDebit !== totalCredit) {
+                return { valid: false, message: "Total Debit and Credit amounts must be equal." };
+            }
+
+            return { valid: true };
+        }
+
+        // On form submit validate voucher details
+        document.querySelector('form').addEventListener('submit', function (e) {
+            let details = [];
+
+            document.querySelectorAll('.voucher-detail-row').forEach((row, index) => {
+                details.push({
+                    TransactionType: row.querySelector(`[name="Details[${index}].TransactionType"]`).value,
+                    DebitAmount: row.querySelector(`[name="Details[${index}].DebitAmount"]`).value,
+                    CreditAmount: row.querySelector(`[name="Details[${index}].CreditAmount"]`).value
+                });
+            });
+
+            const validationResult = validateVoucherDetails(details);
+
+            if (!validationResult.valid) {
+                e.preventDefault();
+                alert(validationResult.message);
+            }
+        });
+
+        // On DOM load attach change events for existing transaction-type selects
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".transaction-type").forEach(function (selectEl) {
+                selectEl.addEventListener("change", onTransactionChangeHandler);
+                toggleDebitCreditFields(selectEl);
+            });
+        });
+    </script>
+}
+
+
+
+
+

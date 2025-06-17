@@ -7,8 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\Chart\" />
-    <Folder Include="Controllers\UserAccount\" />
     <Folder Include="Interfaces\" />
     <Folder Include="Utilities\" />
     <Folder Include="Profiles\" />
