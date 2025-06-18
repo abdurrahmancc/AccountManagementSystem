@@ -3,28 +3,30 @@
 @using Microsoft.AspNetCore.Html
 @using System.Text
 
+<div style="overflow-y: auto; height: 100%;">
+    <input type="hidden" id="selectedAccountId" />
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+        <h2>Chart of Accounts Tree</h2>
+        <div style="display:flex; column-gap: 10px;">
+            @if (ViewBag.Role == "Admin" || ViewBag.Role == "Accountant")
+            {
+                <a id="btnCreate" href="/ChartOfAccount/Create" class="btn btn-sm custom-btn-primary text-white">Create</a>
+                <a id="btnEdit" href="/ChartOfAccount/Edit" class="btn btn-sm custom-btn-primary text-white">Edit</a>
+                <button id="btnDelete" type="button" class="btn btn-sm custom-btn-primary text-white">
+                    Delete
+                </button>
+                <button id="btnPrint" type="button" class="btn btn-sm custom-btn-primary text-white">
+                    Print
+                </button>
+            }
+        </div>
 
-<input type="hidden" id="selectedAccountId" />
-<div style="display:flex; align-items:center; justify-content:space-between;">
-    <h2>Chart of Accounts Tree</h2>
-    <div style="display:flex; column-gap: 10px;">
-        <a id="btnCreate" href="/ChartOfAccount/Create" class="btn btn-sm custom-btn-primary text-white">Create</a>
-        <a id="btnEdit" href="/ChartOfAccount/Edit" class="btn btn-sm custom-btn-primary text-white">Edit</a>
-        <button id="btnDelete" type="button" class="btn btn-sm custom-btn-primary text-white">
-            Delete
-        </button>
-        <button id="btnPrint" type="button" class="btn btn-sm custom-btn-primary text-white">
-            Print
-        </button>
+
     </div>
 
-
-</div>
-
-<div class="tree" id="tree-container">
-    @Html.Raw(RenderTree(Model))
-</div>
-
+    <div class="tree" id="tree-container">
+        @Html.Raw(RenderTree(Model))
+    </div>
 @functions {
     public HtmlString RenderTree(List<AccountManagementSystem.Models.ViewChartOfAccountModel> items)
     {
@@ -45,6 +47,7 @@
         return new HtmlString(sb.ToString());
     }
 }
+</div>
 
 <style>
 
@@ -173,7 +176,7 @@
 
         items.forEach(function (li) {
             li.addEventListener('click', function (e) {
-                e.stopPropagation(); // nested এ click prevent
+                e.stopPropagation();
 
                 if (selectedLi) {
                     selectedLi.classList.remove('selected');
@@ -200,42 +203,41 @@
 
 
 
-                document.addEventListener("DOMContentLoaded", function () {
-                document.getElementById("btnPrint").addEventListener("click", function () {
-                    downloadTreeAsExcel();
-                });
-            });
+    document.getElementById("btnPrint").addEventListener("click", function () {
+        debugger;
+        downloadTreeAsExcel();
+    });
 
-            function downloadTreeAsExcel() {
-                const container = document.getElementById("tree-container");
-                const rows = [];
+    function downloadTreeAsExcel() {
+        const container = document.getElementById("tree-container");
+        const rows = [];
 
-                function parseTree(ul, parent = "") {
-                    const children = ul.children;
-                    for (let li of children) {
-                        if (li.tagName === "LI") {
-                            const id = li.getAttribute("data-id") || "";
-                            const text = li.childNodes[0]?.textContent.trim() || "";
-                            rows.push([id, text, parent]);
+        function parseTree(ul, parent = "") {
+            const children = ul.children;
+            for (let li of children) {
+                if (li.tagName === "LI") {
+                    const id = li.getAttribute("data-id") || "";
+                    const text = li.childNodes[0]?.textContent.trim() || "";
+                    rows.push([id, text, parent]);
 
-                            const nestedUl = li.querySelector("ul");
-                            if (nestedUl) {
-                                parseTree(nestedUl, text);
-                            }
-                        }
+                    const nestedUl = li.querySelector("ul");
+                    if (nestedUl) {
+                        parseTree(nestedUl, text);
                     }
                 }
-
-                const ul = container.querySelector("ul");
-                if (ul) {
-                    parseTree(ul);
-                }
-
-                const ws = XLSX.utils.aoa_to_sheet([["ID", "Account", "Parent"]].concat(rows));
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "ChartOfAccounts");
-                XLSX.writeFile(wb, "ChartOfAccounts.xlsx");
             }
+        }
+
+        const ul = container.querySelector("ul");
+        if (ul) {
+            parseTree(ul);
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet([["ID", "Account", "Parent"]].concat(rows));
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "ChartOfAccounts");
+        XLSX.writeFile(wb, "ChartOfAccounts.xlsx");
+    }
 
 </script>
 }

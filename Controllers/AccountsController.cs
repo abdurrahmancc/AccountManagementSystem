@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace AccountManagementSystem.Controllers
@@ -18,11 +19,10 @@ namespace AccountManagementSystem.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Viewer,Moderator")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Index()
         {
             List<AccountsModel> accounts = new List<AccountsModel>();
-
             using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
             {
                 string query = "SELECT UserId, FullName, Email, Password, Role FROM AspNetUsers";
@@ -61,6 +61,7 @@ namespace AccountManagementSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create(AccountViewModel model)
         {
             model.Roles = GetAllRoles();
@@ -76,8 +77,6 @@ namespace AccountManagementSystem.Controllers
             }
 
             var connStr = _configuration.GetConnectionString("DefaultConnection");
-
-
             using (SqlConnection conn = new SqlConnection(connStr))
             {
                 using (SqlCommand cmd = new SqlCommand("sp_CreatetUser", conn))

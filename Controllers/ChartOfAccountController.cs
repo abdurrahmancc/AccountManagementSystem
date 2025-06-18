@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AccountManagementSystem.Controllers
 {
@@ -16,16 +17,19 @@ namespace AccountManagementSystem.Controllers
                 _configuration = configuration;
             }
 
+        [Authorize]
         public async Task<IActionResult> Index()
         {
             var allAccounts = await GetAllAccountsAsync();
             var treeData = BuildTree(allAccounts);
+            ViewBag.Role = User.FindFirst(ClaimTypes.Role)?.Value;
             return View(treeData);
         }
 
 
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Accountant")]
         public IActionResult Create()
         {
 
@@ -40,6 +44,7 @@ namespace AccountManagementSystem.Controllers
 
 
         [HttpGet]
+        [Authorize(Roles = "Admin,Accountant")]
         public async Task<IActionResult> Edit(int id)
         {
            if (id <= 0)
@@ -57,6 +62,7 @@ namespace AccountManagementSystem.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Accountant")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ChartOfAccountModel model)
         {
@@ -270,6 +276,7 @@ namespace AccountManagementSystem.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,Accountant")]
         public IActionResult Edit(ChartOfAccountCreateViewModel model)
         {
             if (!ModelState.IsValid)

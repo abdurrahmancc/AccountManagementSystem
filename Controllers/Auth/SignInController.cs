@@ -59,13 +59,16 @@ namespace AccountManagementSystem.Controllers.Auth
                                     FullName = reader.GetString(2),
                                     Role = reader.GetGuid(3)
                                 };
+
+                               
                                 var tokenValue = _jwtService.GenerateJwtToken(dto.Email);
+                                var role = GetRoleByNameById(user.Role);
                                 var claims = new List<Claim>
                                     {
                                         new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                                         new Claim(ClaimTypes.Email, user.Email),
                                         new Claim(ClaimTypes.Name, user.FullName),
-                                        new Claim(ClaimTypes.Role, "Admin")
+                                        new Claim(ClaimTypes.Role, role)
                                     };
 
                                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -97,5 +100,47 @@ namespace AccountManagementSystem.Controllers.Auth
             return RedirectToAction("Index", "SignIn");
         }
 
+
+       private string GetRoleByNameById(Guid id)
+        {
+            var roles = GetAllRoles();
+            foreach (var role in  roles)
+            {
+                if (role.RoleId == id)
+                {
+                    return role.RoleName;
+                }
+            }
+            return "";
+        }
+
+        private List<RoleModel> GetAllRoles()
+        {
+            var roles = new List<RoleModel>();
+            var connStr = _config.GetConnectionString("DefaultConnection");
+
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                string query = "SELECT RoleId, RoleName FROM AspNetRoles";
+                SqlCommand cmd = new SqlCommand(query, conn);
+                conn.Open();
+                SqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    roles.Add(new RoleModel
+                    {
+                        RoleId = (Guid)reader["RoleId"],
+                        RoleName = reader["RoleName"].ToString()
+                    });
+
+                }
+
+                conn.Close();
+            }
+            return roles;
+        }  
+
+
+        }
     }
-}

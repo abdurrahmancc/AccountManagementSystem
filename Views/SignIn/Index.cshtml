@@ -136,16 +136,16 @@
     }
 </style>
 
-<div style="display:flex; flex-direction:column; margin-top: 100px;">
+<div style="display:flex; flex-direction:column; margin-top: 40px; overflow-y: auto; height: 100%;">
     <form asp-action="Index" method="post" id="signIn_form" novalidate style="max-width: 495px; margin:auto;" class="custome-floating_form_parent">
         @Html.AntiForgeryToken()
         <h2 style="margin-bottom: 40px;">Login</h2>
         <div class="" style="width: 100%;">
             <div class="custom_input_container ">
-                <input asp-for="Email" type="text" class="custom_floating_input_field" placeholder="Enter Email Address" required>
+                <input asp-for="Email" type="text" class="custom_floating_input_field" placeholder="Enter Username" required>
                 <label asp-for="Email" class="custom_floating_label">
                     <div class="custom_floating_label_dev">
-                        Email<span class="req-star">*</span>
+                        Username<span class="req-star">*</span>
                     </div>
                 </label>
                 <span asp-validation-for="Email"></span>
@@ -191,8 +191,8 @@
         if (response.ok) {
             const result = await response.json();
             localStorage.setItem("jwtToken", result.token);
-            alert("Login successful!");
-            window.location.href = "/"; 
+            // alert("Login successful!");
+            window.location.href = "/ChartOfAccount/Index";
         } else {
             alert("Login failed.");
         }

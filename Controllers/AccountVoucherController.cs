@@ -1,4 +1,5 @@
 ﻿using AccountManagementSystem.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
@@ -18,71 +19,13 @@ namespace AccountManagementSystem.Controllers
             _configuration = configuration;
         }
 
-        //public IActionResult Create()
-        //{
-        //    return View(new AccountVoucherModel { VoucherDate = DateTime.Today });
-        //}
-
-
-        //[HttpPost]
-        //public IActionResult Create(AccountVoucherModel model)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        try
-        //        {
-        //            using var conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-        //            using var cmd = new SqlCommand("sp_SaveAccountVoucher", conn);
-        //            cmd.CommandType = CommandType.StoredProcedure;
-
-        //            // Input parameters
-        //            cmd.Parameters.AddWithValue("@VoucherDate", model.VoucherDate);
-        //            cmd.Parameters.AddWithValue("@VoucherType", (int)model.VoucherType);
-        //            cmd.Parameters.AddWithValue("@ReferenceNo", (object)model.ReferenceNo ?? DBNull.Value);
-        //            cmd.Parameters.AddWithValue("@Note", (object)model.Note ?? DBNull.Value);
-
-        //            // Output parameters
-        //            var paramId = new SqlParameter("@VoucherId", SqlDbType.Int)
-        //            {
-        //                Direction = ParameterDirection.Output
-        //            };
-        //            cmd.Parameters.Add(paramId);
-
-        //            var paramVoucherNumber = new SqlParameter("@VoucherNumber", SqlDbType.NVarChar, 50)
-        //            {
-        //                Direction = ParameterDirection.Output
-        //            };
-        //            cmd.Parameters.Add(paramVoucherNumber);
-
-        //            conn.Open();
-        //            cmd.ExecuteNonQuery();
-
-        //            int newId = paramId.Value != DBNull.Value ? Convert.ToInt32(paramId.Value) : 0;
-        //            string generatedVoucherNumber = paramVoucherNumber.Value?.ToString();
-
-        //            TempData["SuccessMessage"] = $"Voucher saved successfully! Voucher No: {generatedVoucherNumber}";
-        //            return RedirectToAction("Details", new { id = newId });
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            // Optional: Log the exception
-        //            ModelState.AddModelError(string.Empty, "Failed to save voucher: " + ex.Message);
-        //        }
-        //    }
-
-
-        //    return View(model);
-        //}
-
-
+        [Authorize(Roles = "Admin,Accountant")]
         public IActionResult Create()
         {
             var model = new AccountVoucherWithDetailsModel
             {
                 VoucherDate = DateTime.Today
             };
-
-            // Account Head ড্রপডাউন লোড করার জন্য ViewBag
             ViewBag.AccountHeadList = GetAccountHeadList();
 
             return View(model);
@@ -90,6 +33,7 @@ namespace AccountManagementSystem.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Accountant")]
         [ValidateAntiForgeryToken]
         public IActionResult Create(AccountVoucherWithDetailsModel model)
         {
@@ -135,10 +79,8 @@ namespace AccountManagementSystem.Controllers
 
                     conn.Open();
                     cmd.ExecuteNonQuery();
-
                     int newVoucherId = (int)paramVoucherId.Value;
                     string newVoucherNumber = paramVoucherNumber.Value.ToString();
-
                     TempData["SuccessMessage"] = $"Voucher saved with number: {newVoucherNumber}";
                     //return RedirectToAction("Details", new { id = newVoucherId });
                     return RedirectToAction("create", "AccountVoucher");
@@ -170,8 +112,6 @@ namespace AccountManagementSystem.Controllers
 
             var today = DateTime.Now;
             string datePart = today.ToString("MMdd");
-
-            // DB থেকে সর্বশেষ VoucherNumber বের করো যেটা আজকের তারিখ এবং প্রিফিক্স অনুযায়ী
             int lastSerial = 0;
 
             using var conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
@@ -227,6 +167,7 @@ namespace AccountManagementSystem.Controllers
 
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Accountant")]
         public IActionResult Delete(int id)
         {
             using var conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));

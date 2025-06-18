@@ -224,7 +224,7 @@
 
 </style>
 
-<div style="display:flex; flex-direction:column; margin-top: 100px;">
+<div style="display:flex; flex-direction:column; margin-top: 10px; overflow-y: auto; height: 100%;">
     <form asp-action="Edit" method="post" id="create_account_form" novalidate style="max-width: 495px; margin:auto;" class="custome-floating_form_parent">
         @Html.AntiForgeryToken()
         @* Hidden field to bind Id when editing *@

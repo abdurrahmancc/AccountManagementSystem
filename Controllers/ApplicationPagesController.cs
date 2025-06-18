@@ -2,6 +2,7 @@
 using Microsoft.Data.SqlClient;
 using System.Data;
 using AccountManagementSystem.Models;
+using Microsoft.AspNetCore.Authorization;
 
 public class ApplicationPagesController : Controller
 {
@@ -12,6 +13,7 @@ public class ApplicationPagesController : Controller
         _connectionString = configuration.GetConnectionString("DefaultConnection");
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Index()
     {
         var pages = new List<ApplicationPageModel>();
@@ -47,6 +49,7 @@ public class ApplicationPagesController : Controller
 
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Save(ApplicationPageModel model)
     {
         string action = model.PageId == 0 ? "INSERT" : "UPDATE";
@@ -71,6 +74,7 @@ public class ApplicationPagesController : Controller
 
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         using (var conn = new SqlConnection(_connectionString))
@@ -89,21 +93,16 @@ public class ApplicationPagesController : Controller
 
 
     [HttpGet]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Edit(int id)
     {
         ApplicationPageModel page = null;
-
         using (var conn = new SqlConnection(_connectionString))
         using (var cmd = new SqlCommand("sp_ManageApplicationPage", conn))
         {
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@Action", "SELECT");
-            // SELECT SP যদি একক রেকর্ড ফিরায় এমন হলে
-            // কিন্তু এখন আমরা SELECT সব পেজ নিচ্ছি তাই একটু আলাদা SP দরকার single select এর জন্য
-            // অথবা Controller এ ফিল্টার করতে পারো
         }
-
-        // সহজ উপায়: সব পেজ নিয়ে এসে LINQ দিয়ে filter:
         var pages = new List<ApplicationPageModel>();
         using (var conn = new SqlConnection(_connectionString))
         using (var cmd = new SqlCommand("sp_ManageApplicationPage", conn))
@@ -130,9 +129,7 @@ public class ApplicationPagesController : Controller
         }
 
         page = pages.FirstOrDefault(p => p.PageId == id);
-        if (page == null)
-            return NotFound();
-
+        if (page == null) return NotFound();
         return View(page);
     }
 

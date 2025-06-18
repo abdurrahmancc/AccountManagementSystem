@@ -1,4 +1,5 @@
 ﻿using AccountManagementSystem.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using System;
@@ -15,8 +16,9 @@ public class RolePermissionController : Controller
         _connectionString = configuration.GetConnectionString("DefaultConnection");
     }
 
-    // Insert or Update - POST
+
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Save(RolePermissionModel model)
     {
         if (!ModelState.IsValid)
@@ -49,8 +51,9 @@ public class RolePermissionController : Controller
     }
 
 
-    // Delete - POST
+
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Delete(int id)
     {
         if (id <= 0)
@@ -73,6 +76,7 @@ public class RolePermissionController : Controller
         return Ok(new { success = true });
     }
 
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Index()
     {
         var rolePermissions = new List<RolePermissionModel>();
@@ -83,7 +87,6 @@ public class RolePermissionController : Controller
         {
             await conn.OpenAsync();
 
-            // RolePermissions লোড
             using (var cmd = new SqlCommand("sp_GetAllRolePermissions", conn))
             {
                 cmd.CommandType = CommandType.StoredProcedure;
@@ -105,7 +108,7 @@ public class RolePermissionController : Controller
                 }
             }
 
-            // Roles লোড
+
             using (var cmdRoles = new SqlCommand("sp_GetAllRoles", conn))
             {
                 cmdRoles.CommandType = CommandType.StoredProcedure;
@@ -123,7 +126,7 @@ public class RolePermissionController : Controller
                 }
             }
 
-            // ✅ ApplicationPages লোড
+
             using (var cmdPages = new SqlCommand("SELECT PageName FROM ApplicationPages", conn))
             {
                 using (var readerPages = await cmdPages.ExecuteReaderAsync())

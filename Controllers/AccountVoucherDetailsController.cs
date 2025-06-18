@@ -16,7 +16,6 @@ namespace AccountManagementSystem.Controllers
             _configuration = configuration;
         }
 
-        // VoucherDetails লিস্ট দেখানোর জন্য (যেমন Details page এ দেখাবে)
         public IActionResult Index(int voucherId)
         {
             var details = new List<AccountVoucherDetailsModels>();
@@ -123,7 +122,7 @@ namespace AccountManagementSystem.Controllers
                 return RedirectToAction("Index", new { voucherId = model.VoucherId });
             }
 
-            // Model validation fail হলে dropdown পুনরায় লোড করতে হবে
+
             ViewBag.AccountHeadList = GetAccountHeadList();
             return View(model);
         }
