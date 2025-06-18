@@ -64,14 +64,14 @@
     }
 
         #select-label-container select:focus {
-            border: 1px solid #0D99FF; /* Apply border on focus */
+            border: 1px solid #1abc9c; /* Apply border on focus */
             outline: none; /* Prevent default focus outline */
         }
 
 
 
         #select-label-container select option:checked {
-            background-color: #0D99FF;
+            background-color: #1abc9c;
             color: #ffffff;
         }
 
@@ -127,7 +127,7 @@
 
 
         .custom_floating_input_field:focus {
-            border: 1px solid #0D99FF;
+            border: 1px solid #1abc9c;
             border-radius: 30px;
         }
 
@@ -174,7 +174,7 @@
         margin-bottom: 24px;
         font-size: 16px;
         line-height: 24px;
-        color: #0D99FF;
+        color: #1abc9c;
         text-align: end;
     }
 
@@ -188,8 +188,8 @@
         padding-bottom: 17px;
         color: #FFFFFF;
         border: none;
-        background-color: #0D99FF;
-        box-shadow: 1px 1px 4px 0px #0D99FF40;
+        background-color: #1abc9c;
+        box-shadow: 1px 1px 4px 0px #1abc9c40;
     }
 
 
@@ -227,7 +227,7 @@
 <div style="display:flex; flex-direction:column; margin-top: 100px;">
     <form asp-action="Create" method="post" id="create_account_form" novalidate style="max-width: 495px; margin:auto;" class="custome-floating_form_parent">
         @Html.AntiForgeryToken()
-        <h2 style="margin-bottom: 40px;">Chart Of Account Setup</h2>
+        <h2 style="margin-bottom: 40px;">Chart Of Account create</h2>
         <div class="" style="width: 100%;">
 
             <div class="custom_input_container ">
@@ -241,7 +241,7 @@
             </div>
 
 
-            <div id="select-label-container" style="margin-bottom:28px;">
+            <div id="select-label-container" style="margin-bottom:28px;" class="ParentId-container">
                 <div style="position: relative;">
                     <label asp-for="ParentId" class="select-label" style="background-color:white; color:#6A6678; font-size:12px;">
                         Parent Head
@@ -259,7 +259,7 @@
 
 
 
-            <div class="custom_input_container ">
+            <div class="custom_input_container " id="CodeContainer">
                 <input asp-for="Code" class="custom_floating_input_field" placeholder="" required />
                 <span asp-validation-for="Code"></span>
                 <label asp-for="Code" class="custom_floating_label">
@@ -301,6 +301,8 @@
 
 
 <script>
+    var list = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.ParentList.ToList()));
+    console.log("list", list)
     const isLastLevel = document.getElementById("IsLastLevel");
     const isParent = document.getElementById("IsParent");
 
@@ -318,10 +320,48 @@
 
     document.querySelector("select[name='ParentId']").addEventListener("change", function () {
         var parentId = this.value;
+        GetACCode(parentId);
+    });
+
+    function GetACCode(parentId){
         fetch(`/ChartOfAccount/GetNextAccountCode?parentId=${parentId}`)
             .then(response => response.json())
             .then(data => {
                 document.getElementById("Code").value = data.code;
             });
-    });
+    }
+
+    function getQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      return id;
+    }
+
+    function fetchAccountById(id) {
+    fetch(`/ChartOfAccount/GetChartOfAccountById?id=${id}`)
+        .then(response => {
+            if (!response.ok) throw new Error("Data not found");
+            return response.json();
+        })
+        .then(data => {
+                const parentSelect = document.getElementById("ParentId");
+                for (let i = 0; i < parentSelect.options.length; i++) {
+                        if (parentSelect.options[i].value == data.parentId) {
+                        parentSelect.options[i].selected = true;
+                        GetACCode(data.parentId);
+                }
+
+            }
+
+        })
+        .catch(error => {
+            console.error("Error fetching account:", error);
+        });
+    }
+
+    // Usage
+    const getQueryParamsId = getQueryParams();
+    if(getQueryParamsId){
+        fetchAccountById(getQueryParamsId)
+    }
 </script>

@@ -1,6 +1,4 @@
-﻿@model AccountManagementSystem.Models.AccountViewModel
-
-
+﻿@model ChartOfAccountCreateViewModel
 <style>
     .select-label {
         position: absolute;
@@ -214,10 +212,10 @@
 
 
     .custom_floating_select_field {
-        appearance: none; 
+        appearance: none;
         -webkit-appearance: none;
         -moz-appearance: none;
-        padding-right: 2rem; 
+        padding-right: 2rem;
         background-image: url('/icons/down-arrow-icon.svg');
         background-repeat: no-repeat;
         background-position: right 0.75rem center;
@@ -227,62 +225,139 @@
 </style>
 
 <div style="display:flex; flex-direction:column; margin-top: 100px;">
-    <form asp-action="Create" method="post" id="create_account_form" novalidate style="max-width: 495px; margin:auto;" class="custome-floating_form_parent">
-    <h2 style="margin-bottom: 40px;">Create User</h2>
-        <div class="" style="width: 100%;">
-            <div class="custom_input_container ">
-                <input asp-for="FullName" type="text"  class="custom_floating_input_field" placeholder="Full Name" required>
-                <label asp-for="FullName" class="custom_floating_label">
+    <form asp-action="Edit" method="post" id="create_account_form" novalidate style="max-width: 495px; margin:auto;" class="custome-floating_form_parent">
+        @Html.AntiForgeryToken()
+        @* Hidden field to bind Id when editing *@
+        <input type="hidden" asp-for="Id" />
+
+        <h2 style="margin-bottom: 40px;">Chart Of Account Setup</h2>
+        <div style="width: 100%;">
+
+            <div class="custom_input_container">
+                <input asp-for="AccountHead" class="custom_floating_input_field" placeholder="" required />
+                <span asp-validation-for="AccountHead" class="text-danger"></span>
+                <label asp-for="AccountHead" class="custom_floating_label">
                     <div class="custom_floating_label_dev">
-                        FullName<span class="req-star">*</span>
+                        Account Head<span class="req-star">*</span>
                     </div>
                 </label>
-                <span asp-validation-for="FullName"></span>
-            </div> 
-            <div class="custom_input_container ">
-                <input asp-for="Email" type="text" class="custom_floating_input_field" placeholder="Enter Your Email" required>
-                <label asp-for="Email" class="custom_floating_label">
-                    <div class="custom_floating_label_dev">
-                        Email<span class="req-star">*</span>
-                    </div>
-                </label>
-                <span asp-validation-for="Email"></span>
-            </div>
-            <div class="custom_input_container ">
-                <input asp-for="Password" type="password" class="custom_floating_input_field" placeholder="Enter Your Password" required>
-                <label asp-for="Password" class="custom_floating_label">
-                    <div class="custom_floating_label_dev">
-                        Password<span class="req-star">*</span>
-                    </div>
-                </label>
-                <span asp-validation-for="Password"></span>
             </div>
 
-            <div id="select-label-container" style="margin-bottom:28px;">
+            <div id="select-label-container" style="margin-bottom:28px;" class="ParentId-container">
                 <div style="position: relative;">
-                    <label asp-for="SelectedRoleId" class="select-label" style="background-color:white; color:#6A6678; font-size:12px;">
-                        <div class="custom_floating_label_dev">
-                            Role<span class="req-star">*</span>
-                        </div>
+                    <label asp-for="ParentId" class="select-label" style="background-color:white; color:#6A6678; font-size:12px;">
+                        Parent Head
                     </label>
-                    <select asp-for="SelectedRoleId" class="custom_floating_input_field custom_floating_select_field">
-                        <option value="" disabled selected>Select Role</option>
-                        @foreach (var role in Model.Roles)
+                    <select asp-for="ParentId" readonly class="custom_floating_input_field custom_floating_select_field">
+                        <option value="" disabled >Select Parent</option>
+                        @foreach (var parent in Model.ParentList)
                         {
-                            <option value="@role.RoleId">@role.RoleName</option>
+                            <option value="@parent.Value">@parent.Text</option>
                         }
-                     </select>
-                    <span asp-validation-for="SelectedRoleId"></span>
-                 </div>
+                    </select>
+                    <span asp-validation-for="ParentId" class="text-danger"></span>
+                </div>
             </div>
 
+            <div class="custom_input_container" id="CodeContainer">
+                <input readonly  asp-for="Code" class="custom_floating_input_field" placeholder="" required />
+                <span asp-validation-for="Code" class="text-danger"></span>
+                <label asp-for="Code" class="custom_floating_label">
+                    <div class="custom_floating_label_dev">
+                        Code <span class="req-star">*</span>
+                    </div>
+                </label>
+            </div>
+
+            <div class="custom_input_container">
+                <label asp-for="Description"></label>
+                <textarea asp-for="Description" class="custom_floating_input_field" rows="3" placeholder="Enter Description"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between">
+                <div class="custom_input_container form-check">
+                    <label asp-for="IsLastLevel" class="form-check-label"> Is Last Level</label>
+                    <input asp-for="IsLastLevel" class="form-check-input" />
+                </div>
+
+                <div class="custom_input_container form-check">
+                    <label asp-for="IsParent" class="form-check-label">Is Parent</label>
+                    <input asp-for="IsParent" class="form-check-input" />
+                </div>
+            </div>
 
             <div class="w-full">
                 <button type="submit" id="custom_submit_submit" class="custom_submit_button">
                     Submit
-                </button>              
+                </button>
             </div>
         </div>
-
     </form>
 </div>
+
+
+
+<script>
+    const isLastLevel = document.getElementById("IsLastLevel");
+    const isParent = document.getElementById("IsParent");
+
+    isLastLevel.addEventListener("change", function() {
+      if (this.checked) {
+        isParent.checked = false;
+      }
+    });
+
+    isParent.addEventListener("change", function() {
+      if (this.checked) {
+        isLastLevel.checked = false;
+      }
+    });
+
+    document.querySelector("select[name='ParentId']").addEventListener("change", function () {
+        var parentId = this.value;
+        GetACCode(parentId);
+    });
+
+    function GetACCode(parentId){
+        fetch(`/ChartOfAccount/GetNextAccountCode?parentId=${parentId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("Code").value = data.code;
+            });
+    }
+
+    function getQueryParams() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      return id;
+    }
+
+    function fetchAccountById(id) {
+    fetch(`/ChartOfAccount/GetChartOfAccountById?id=${id}`)
+        .then(response => {
+            if (!response.ok) throw new Error("Data not found");
+            return response.json();
+        })
+        .then(data => {
+                const parentSelect = document.getElementById("ParentId");
+                for (let i = 0; i < parentSelect.options.length; i++) {
+                        if (parentSelect.options[i].value == data.parentId) {
+                        parentSelect.options[i].selected = true;
+                        GetACCode(data.parentId);
+                }
+
+            }
+
+        })
+        .catch(error => {
+            console.error("Error fetching account:", error);
+        });
+    }
+
+    // Usage
+    const getQueryParamsId = getQueryParams();
+    if(getQueryParamsId){
+        fetchAccountById(getQueryParamsId)
+    }
+</script>

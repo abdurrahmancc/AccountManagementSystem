@@ -37,6 +37,25 @@ namespace AccountManagementSystem.Controllers
             return View(model);
         }
 
+
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+           if (id <= 0)
+            {
+                var allAccounts = await GetAllAccountsAsync();
+                var treeData = BuildTree(allAccounts);
+                return View("Index", treeData);
+            }
+
+            var model = FetchChartOfAccountById(id);
+            model.ParentList = GetParentChartOfAccounts();
+
+
+            return View(model);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ChartOfAccountModel model)
@@ -246,6 +265,136 @@ namespace AccountManagementSystem.Controllers
 
             return list;
         }
+
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(ChartOfAccountCreateViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                // Parent dropdown refill করা লাগবে validation error এ
+                model.ParentList = GetParentChartOfAccounts();
+                return View(model);
+            }
+
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                using (SqlCommand cmd = new SqlCommand(@"
+            UPDATE ChartOfAccount
+            SET 
+                ParentId = @ParentId,
+                AccountHead = @AccountHead,
+                Code = @Code,
+                Description = @Description,
+                IsLastLevel = @IsLastLevel,
+                IsParent = @IsParent,
+                IsActive = @IsActive,
+                ModifiedDate = @ModifiedDate,
+                ModifiedBy = @ModifiedBy
+            WHERE Id = @Id", conn))
+                {
+                    cmd.Parameters.AddWithValue("@Id", model.Id);
+                    cmd.Parameters.AddWithValue("@ParentId", (object?)model.ParentId ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@AccountHead", model.AccountHead);
+                    cmd.Parameters.AddWithValue("@Code", model.Code);
+                    cmd.Parameters.AddWithValue("@Description", (object?)model.Description ?? DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IsLastLevel", model.IsLastLevel);
+                    cmd.Parameters.AddWithValue("@IsParent", model.IsParent);
+                    cmd.Parameters.AddWithValue("@IsActive", model.IsActive);
+                    cmd.Parameters.AddWithValue("@ModifiedDate", DateTime.Now);
+
+                    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    cmd.Parameters.AddWithValue("@ModifiedBy", string.IsNullOrEmpty(userId) ? (object)DBNull.Value : userId);
+
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public IActionResult Delete(int id)
+        {
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+                {
+                    using (SqlCommand cmd = new SqlCommand("sp_DeleteChartOfAccount", conn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@Id", id);
+
+                        conn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+
+                return Ok(new { success = true });
+            }
+            catch (SqlException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+
+
+
+
+        [HttpGet]
+        public  IActionResult GetChartOfAccountById(int id)
+        {
+            var account = FetchChartOfAccountById(id);
+            if (account == null) return NotFound();
+            return Json(account);
+        }
+
+
+        private ChartOfAccountCreateViewModel? FetchChartOfAccountById(int id)
+        {
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                using (SqlCommand cmd = new SqlCommand("sp_GetChartOfAccountById", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@Id", id);
+
+                    conn.Open();
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new ChartOfAccountCreateViewModel
+                            {
+                                Id = (int)reader["Id"],
+                                ParentId = reader["ParentId"] as int?,
+                                AccountHead = reader["AccountHead"].ToString(),
+                                Code = reader["Code"].ToString(),
+                                IsLastLevel = Convert.ToBoolean(reader["IsLastLevel"]),
+                                IsParent = Convert.ToBoolean(reader["IsParent"]),
+                                Description = reader["Description"]?.ToString(),
+                                IsActive = Convert.ToBoolean(reader["IsActive"]),
+                                CreatedDate = Convert.ToDateTime(reader["CreatedDate"]),
+                                ModifiedDate = reader["ModifiedDate"] as DateTime?,
+                                CreatedBy = reader["CreatedBy"].ToString(),
+                                ModifiedBy = reader["ModifiedBy"].ToString(),
+                                Level = Convert.ToInt32(reader["Level"])
+                            };
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+
 
     }
 }

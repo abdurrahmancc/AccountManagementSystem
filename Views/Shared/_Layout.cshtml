@@ -159,7 +159,7 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar" style="display: flex; flex-direction: column; justify-content: space-between;">
         <div>
-            <h2 style="text-align:center; margin-bottom: 15px;">AMS</h2>
+            <h2 style="text-align:center; margin-bottom: 15px; color:white;">AMS</h2>
             @foreach (var item in await pagesTask)
             {
                 var pageUrl = item.PageUrl.StartsWith("/") ? item.PageUrl : "/" + item.PageUrl;
@@ -186,7 +186,7 @@
 
     <!-- Main Content -->
     <div class="content" style="height:100vh;">
-        <div style="background-color:#fff; height:100%; padding:32px;">
+        <div style="background-color:#fff; height:100%; padding:32px; overflow-y: scroll;">
             @RenderBody()
         </div>
     </div>
