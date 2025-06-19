@@ -143,7 +143,7 @@ namespace AccountManagementSystem.Controllers
             var list = new List<AccountVoucherModel>();
 
             using var conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            using var cmd = new SqlCommand("SELECT VoucherId, VoucherDate, VoucherType, VoucherNumber, ReferenceNo, Note, CreatedAt FROM AccountVouchers ORDER BY VoucherDate DESC", conn);
+            using var cmd = new SqlCommand("SELECT VoucherId, VoucherDate, VoucherType, VoucherNumber, ReferenceNo, Note, CreatedAt FROM AccountVoucher ORDER BY VoucherDate DESC", conn);
 
             conn.Open();
             using var reader = cmd.ExecuteReader();
@@ -171,21 +171,33 @@ namespace AccountManagementSystem.Controllers
         public IActionResult Delete(int id)
         {
             using var conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            using var cmd = new SqlCommand("DELETE FROM AccountVouchers WHERE VoucherId = @VoucherId", conn);
-            cmd.Parameters.AddWithValue("@VoucherId", id);
             conn.Open();
-            int affectedRows = cmd.ExecuteNonQuery();
 
-            if (affectedRows > 0)
+            using var tran = conn.BeginTransaction();
+
+            try
             {
-                TempData["SuccessMessage"] = "Voucher deleted successfully.";
+                using (var cmd1 = new SqlCommand("DELETE FROM AccountVoucherDetails WHERE VoucherId = @VoucherId", conn, tran))
+                {
+                    cmd1.Parameters.AddWithValue("@VoucherId", id);
+                    cmd1.ExecuteNonQuery();
+                }
+
+                using (var cmd2 = new SqlCommand("DELETE FROM AccountVoucher WHERE VoucherId = @VoucherId", conn, tran))
+                {
+                    cmd2.Parameters.AddWithValue("@VoucherId", id);
+                    cmd2.ExecuteNonQuery();
+                }
+
+                tran.Commit();
             }
-            else
+            catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Failed to delete voucher.";
+                tran.Rollback();
+                throw;
             }
 
-            return RedirectToAction("Details");
+            return RedirectToAction("Details"); 
         }
 
 

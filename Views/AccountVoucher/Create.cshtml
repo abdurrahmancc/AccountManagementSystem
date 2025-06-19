@@ -11,7 +11,7 @@
     {
         <div class="alert alert-success">@TempData["SuccessMessage"]</div>
     }
-    <form asp-action="Create" method="post" class="mt-3">
+    <form id="myVoucherForm" asp-action="Create" method="post" class="mt-3">
         <!-- Master Voucher Fields -->
         <div class="form-group mb-3">
             <label asp-for="VoucherDate">Voucher Date</label>
@@ -236,6 +236,8 @@
             }
         }
 
+
+
         function validateVoucherDetails(details) {
             let debitCount = 0;
             let creditCount = 0;
@@ -276,25 +278,30 @@
             return { valid: true };
         }
 
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById('myVoucherForm');
+            console.log(form)
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    let details = [];
+                    document.querySelectorAll('.voucher-detail-row').forEach((row, index) => {
+                        details.push({
+                            TransactionType: row.querySelector(`[name="Details[${index}].TransactionType"]`).value,
+                            DebitAmount: row.querySelector(`[name="Details[${index}].DebitAmount"]`).value,
+                            CreditAmount: row.querySelector(`[name="Details[${index}].CreditAmount"]`).value
+                        });
+                    });
 
-        document.querySelector('form').addEventListener('submit', function (e) {
-            let details = [];
+                    const validationResult = validateVoucherDetails(details);
 
-            document.querySelectorAll('.voucher-detail-row').forEach((row, index) => {
-                details.push({
-                    TransactionType: row.querySelector(`[name="Details[${index}].TransactionType"]`).value,
-                    DebitAmount: row.querySelector(`[name="Details[${index}].DebitAmount"]`).value,
-                    CreditAmount: row.querySelector(`[name="Details[${index}].CreditAmount"]`).value
+                    if (!validationResult.valid) {
+                        e.preventDefault();
+                        alert(validationResult.message);
+                    }
                 });
-            });
-
-            const validationResult = validateVoucherDetails(details);
-
-            if (!validationResult.valid) {
-                e.preventDefault();
-                alert(validationResult.message);
             }
         });
+
 
         document.addEventListener("DOMContentLoaded", function () {
             document.querySelectorAll(".transaction-type").forEach(function (selectEl) {

@@ -4,11 +4,8 @@
 @inject AppDbContext _context
 
 @{
+    var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
     var pagesTask = _context.GetApplicationPagesAsync();
-}
-
-
-@{
     var isLoggedIn = User.Identity.IsAuthenticated;
 }
 
@@ -57,7 +54,6 @@
     }
 
     .content {
-        margin-left: 250px;
         padding: 32px;
         transition: margin-left 0.3s ease;
     }
@@ -157,35 +153,37 @@
         <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
     </div>
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar" style="display: flex; flex-direction: column; justify-content: space-between;">
-        <div>
-            <h2 style="text-align:center; margin-bottom: 15px; color:white;">AMS</h2>
-            @foreach (var item in await pagesTask)
-            {
-                var pageUrl = item.PageUrl.StartsWith("/") ? item.PageUrl : "/" + item.PageUrl;
-                <a class="" style="cursor:pointer" href="@pageUrl">@item.PageName</a>
-            }                       
-        </div>
-        <div>
-            @if (isLoggedIn)
-            {
-                <form asp-controller="SignIn" asp-action="Logout" method="post" class="logout-form">
-                    <button type="submit" class="log-button">
-                        <i class="bi bi-box-arrow-right"></i> Logout
+    @if (isLoggedIn){
+        <div class="sidebar" id="sidebar" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h2 style="text-align:center; margin-bottom: 15px; color:white;">AMS</h2>
+                @foreach (var item in await pagesTask)
+                {
+                    var pageUrl = item.PageUrl.StartsWith("/") ? item.PageUrl : "/" + item.PageUrl;
+                    <a class="" style="cursor:pointer" href="@pageUrl">@item.PageName</a>
+                }                       
+            </div>
+        
+            <div>
+                @if (isLoggedIn)
+                {
+                    <form asp-controller="SignIn" asp-action="Logout" method="post" class="logout-form">
+                        <button type="submit" class="log-button">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <button class="log-button" style="width: 100%; padding: 12px;">
+                        <a class="nav-link text-dark p-0 text-white" asp-controller="SignIn" asp-action="Index">SignIn</a>
                     </button>
-                </form>
-            }
-            else
-            {
-                <button class="log-button" style="width: 100%; padding: 12px;">
-                    <a class="nav-link text-dark p-0 text-white" asp-controller="SignIn" asp-action="Index">SignIn</a>
-                </button>
-            }
+                }
+            </div>
         </div>
-    </div>
-
+    }
     <!-- Main Content -->
-    <div class="content" style="height:100vh;">
+    <div class="content" style="height:100vh;  @(isLoggedIn ? "margin-left:250px;" : "")">
         <div style="background-color:#fff; height:100%; padding-top:12px; padding-bottom: 32px;">
             <div style="height: 100%; margin-top: 20px; padding-left: 32px; padding-right: 32px; padding-bottom:20px;">
                 @RenderBody()

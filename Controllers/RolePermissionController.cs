@@ -1,7 +1,9 @@
-﻿using AccountManagementSystem.Models;
+﻿using AccountManagementSystem.data;
+using AccountManagementSystem.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data;
 using System.Security.Claims;
@@ -10,11 +12,14 @@ using System.Security.Claims;
 public class RolePermissionController : Controller
 {
     private readonly string _connectionString;
+    private readonly AppDbContext _context;
 
-    public RolePermissionController(IConfiguration configuration)
+    public RolePermissionController(IConfiguration configuration, AppDbContext context)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection");
+        _context = context;
     }
+
 
 
     [HttpPost]
@@ -24,31 +29,50 @@ public class RolePermissionController : Controller
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-
         var updatedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
-        using (var conn = new SqlConnection(_connectionString))
+
+        try
         {
-            using (var cmd = new SqlCommand("sp_ManageRolePermission", conn))
+            using (var conn = new SqlConnection(_connectionString))
             {
-                cmd.CommandType = CommandType.StoredProcedure;
+                using (var cmd = new SqlCommand("sp_ManageRolePermission", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
 
-                string action = model.Id == 0 ? "INSERT" : "UPDATE"; 
+                    string action = model.Id == 0 ? "INSERT" : "UPDATE";
 
-                cmd.Parameters.AddWithValue("@Action", action);
-                cmd.Parameters.AddWithValue("@Id", model.Id);
-                cmd.Parameters.AddWithValue("@RoleId", model.RoleId);
-                cmd.Parameters.AddWithValue("@PageName", model.PageName ?? (object)DBNull.Value);
-                cmd.Parameters.AddWithValue("@IsAllowed", model.IsAllowed);
-                cmd.Parameters.AddWithValue("@CreatedAt", model.CreatedAt == DateTime.MinValue ? DateTime.Now : model.CreatedAt);
-                cmd.Parameters.AddWithValue("@UpdatedBy", updatedBy);
+                    var pageName = await GetPageNameByIdAsync(model.PageId);
 
-                await conn.OpenAsync();
-                await cmd.ExecuteNonQueryAsync();
+                    cmd.Parameters.AddWithValue("@Action", action);
+                    cmd.Parameters.AddWithValue("@Id", model.Id);
+                    cmd.Parameters.AddWithValue("@RoleId", model.RoleId);
+                    cmd.Parameters.AddWithValue("@PageId", model.PageId);
+                    //cmd.Parameters.AddWithValue("@PageName", model.PageName ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("@IsAllowed", model.IsAllowed);
+                    cmd.Parameters.AddWithValue("@CreatedAt", model.CreatedAt == DateTime.MinValue ? DateTime.Now : model.CreatedAt);
+                    cmd.Parameters.AddWithValue("@UpdatedBy", updatedBy);
+
+                    await conn.OpenAsync();
+                    await cmd.ExecuteNonQueryAsync();
+                }
             }
-        }
 
-        return Ok(new { success = true });
+            return Ok(new { success = true });
+        }
+        catch (SqlException ex)
+        {
+            if (ex.Message.Contains("already has permission"))
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            return StatusCode(500, new { success = false, message = "Database error occurred.", detail = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = "An unexpected error occurred.", detail = ex.Message });
+        }
     }
+
 
 
 
@@ -99,6 +123,7 @@ public class RolePermissionController : Controller
                         {
                             Id = Convert.ToInt32(reader["Id"]),
                             RoleId = (Guid)reader["RoleId"],
+                            PageId = reader["PageId"] == DBNull.Value ? 0 : Convert.ToInt32(reader["PageId"]),
                             PageName = reader["PageName"].ToString(),
                             IsAllowed = (bool)reader["IsAllowed"],
                             CreatedAt = (DateTime)reader["CreatedAt"],
@@ -127,7 +152,7 @@ public class RolePermissionController : Controller
             }
 
 
-            using (var cmdPages = new SqlCommand("SELECT PageName FROM ApplicationPages", conn))
+            using (var cmdPages = new SqlCommand("SELECT PageName, PageId FROM ApplicationPages", conn))
             {
                 using (var readerPages = await cmdPages.ExecuteReaderAsync())
                 {
@@ -135,7 +160,8 @@ public class RolePermissionController : Controller
                     {
                         pages.Add(new ApplicationPageModel
                         {
-                            PageName = readerPages["PageName"].ToString()
+                            PageName = readerPages["PageName"].ToString(),
+                            PageId = readerPages["PageId"] == DBNull.Value ? 0 : Convert.ToInt32(readerPages["PageId"])
                         });
                     }
                 }
@@ -149,8 +175,38 @@ public class RolePermissionController : Controller
         return View();
     }
 
+    [HttpGet("AllowedPermissions/{roleId}")]
+    public async Task<IActionResult> AllowedPermissions(Guid roleId)
+    {
+        var allowedPermissions = await _context.GetAllowedRolePermissionsByRoleAsync(roleId);
+        return Ok(allowedPermissions);
+    }
 
+    private async Task<string> GetPageNameByIdAsync(int pageId)
+    {
+        if (pageId <= 0)
+            return null;
 
+        string pageName = null;
+
+        using (var conn = new SqlConnection(_connectionString))
+        {
+            await conn.OpenAsync();
+
+            using (var cmd = new SqlCommand("SELECT PageName FROM ApplicationPages WHERE PageId = @PageId", conn))
+            {
+                cmd.Parameters.AddWithValue("@PageId", pageId);
+
+                var result = await cmd.ExecuteScalarAsync();
+                if (result != null && result != DBNull.Value)
+                {
+                    pageName = result.ToString();
+                }
+            }
+        }
+
+        return pageName;
+    }
 
 
 }

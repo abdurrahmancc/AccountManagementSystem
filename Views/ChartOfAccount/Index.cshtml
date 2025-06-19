@@ -129,39 +129,42 @@
 
 <script>
 
-    document.getElementById("btnDelete").addEventListener("click", function () {
-        var accountId = document.getElementById("selectedAccountId").value;
-        if (!accountId) {
-            alert("Please select an account to delete.");
-            return;
+        var btnDelete = document.getElementById("btnDelete");
+        if(btnDelete){
+            btnDelete.addEventListener("click", function () {
+            var accountId = document.getElementById("selectedAccountId").value;
+            if (!accountId) {
+                alert("Please select an account to delete.");
+                return;
+            }
+            fetch(`/ChartOfAccount/Delete/${accountId}`, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({}) 
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text || 'Server error') });
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert("Account deleted successfully.");
+                    location.reload();
+                } else {
+                    alert("Delete failed: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("An error occurred: " + error.message);
+            });
+        });
         }
 
-        fetch(`/ChartOfAccount/Delete/${accountId}`, {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({}) 
-        })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => { throw new Error(text || 'Server error') });
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                alert("Account deleted successfully.");
-                location.reload();
-            } else {
-                alert("Delete failed: " + data.message);
-            }
-        })
-        .catch(error => {
-            console.error("Error:", error);
-            alert("An error occurred: " + error.message);
-        });
-    });
 
 
 
@@ -172,11 +175,32 @@
         const btnDelete = document.getElementById('btnDelete');
         const selectedInput = document.getElementById('selectedAccountId');
 
+
+        function fetchAccountById(id) {
+        fetch(`/ChartOfAccount/GetChartOfAccountById?id=${id}`)
+            .then(response => {
+                if (!response.ok) throw new Error("Data not found");
+                return response.json();
+            })
+            .then(data => {
+                if(data.isLastLevel){
+                        btnCreate.classList.add('disabled');
+                }else{
+                        btnCreate.classList.remove('disabled');
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching account:", error);
+            });
+        }
+
         let selectedLi = null;
 
         items.forEach(function (li) {
             li.addEventListener('click', function (e) {
                 e.stopPropagation();
+                        
+                   
 
                 if (selectedLi) {
                     selectedLi.classList.remove('selected');
@@ -187,6 +211,8 @@
 
                 const id = li.getAttribute('data-id');
                 selectedInput.value = id;
+
+                fetchAccountById(selectedInput.value);
 
                 btnEdit.classList.remove('disabled');
                 btnEdit.href = `/ChartOfAccount/Edit/${id}`;
@@ -201,12 +227,14 @@
         });
     });
 
+    let btnPrint =  document.getElementById("btnPrint");
+    if(btnPrint){
+        btnPrint.addEventListener("click", function () {
+            debugger;
+            downloadTreeAsExcel();
+        });
+    }
 
-
-    document.getElementById("btnPrint").addEventListener("click", function () {
-        debugger;
-        downloadTreeAsExcel();
-    });
 
     function downloadTreeAsExcel() {
         const container = document.getElementById("tree-container");

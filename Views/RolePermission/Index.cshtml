@@ -3,103 +3,105 @@
 @{
     ViewData["Title"] = "Role Permission Management";
 }
+<div style="height:100%; overflow-y:auto;">
+    <h2 class="mb-4">Role Permission Management</h2>
 
-<h2 class="mb-4">Role Permission Management</h2>
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>Add / Edit Role Permission</h5>
+        </div>
+        <div class="card-body">
+            <form id="rolePermissionForm" class="row g-3">
+                <input type="hidden" id="Id" name="Id" value="0" />
 
-<div class="card mb-4">
-    <div class="card-header">
-        <h5>Add / Edit Role Permission</h5>
-    </div>
-    <div class="card-body">
-        <form id="rolePermissionForm" class="row g-3">
-            <input type="hidden" id="Id" name="Id" value="0" />
-
-            <div class="col-md-4">
-                <label for="PageName" class="form-label">Page Name</label>
-                <select id="PageName" name="PageName" class="form-select" required>
-                    <option value="">-- Select Page --</option>
-                    @foreach (var info in ViewBag.Pages as List<AccountManagementSystem.Models.ApplicationPageModel>)
-                    {
-                        <option value="@info.PageName">@info.PageName</option>
-                    }
-                </select>
-            </div>
-
-            <div class="col-md-4">
-                <label for="RoleId" class="form-label">Role</label>
-                <select id="RoleId" name="RoleId" class="form-select" required>
-                    <option value="">-- Select Role --</option>
-                    @foreach (var role in ViewData["Roles"] as List<RoleModel>)
-                    {
-                        <option value="@role.RoleId">@role.RoleName</option>
-                    }
-                </select>
-            </div>
-
-            <div class="col-12 d-flex align-items-center">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="IsAllowed" name="IsAllowed" />
-                    <label class="form-check-label" for="IsAllowed">Is Allowed</label>
+                <div class="col-md-4">
+                    <label for="PageId" class="form-label">Page Name</label>
+                    <select id="PageId" name="PageId" class="form-select" required>
+                        <option value="">-- Select Page --</option>
+                        @foreach (var info in ViewBag.Pages as List<AccountManagementSystem.Models.ApplicationPageModel>)
+                        {
+                            <option value="@info.PageId">@info.PageName</option>
+                        }
+                    </select>
                 </div>
-            </div>
 
-            <div class="col-12">
-                <button type="submit" class="btn btn-primary me-2">Save</button>
-                <button type="button" class="btn btn-secondary" id="btnClear">Clear</button>
-            </div>
-        </form>
+                <div class="col-md-4">
+                    <label for="RoleId" class="form-label">Role</label>
+                    <select id="RoleId" name="RoleId" class="form-select" required>
+                        <option value="">-- Select Role --</option>
+                        @foreach (var role in ViewData["Roles"] as List<RoleModel>)
+                        {
+                            <option value="@role.RoleId">@role.RoleName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex align-items-center">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="IsAllowed" name="IsAllowed" />
+                        <label class="form-check-label" for="IsAllowed">Is Allowed</label>
+                    </div>
+                </div>
+
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary me-2">Save</button>
+                    <button type="button" class="btn btn-secondary" id="btnClear">Clear</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
-<h3>Role Permission List</h3>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Role</th>
-            <th>Page Name</th>
-            <th>Is Allowed</th>
-            <th>Created At</th>
-            <th>Updated By</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @{
-            var rolePermissions = ViewBag.RolePermissions as List<RolePermissionModel>;
-            var roles = ViewBag.Roles as List<RoleModel>;
-        }
-
-        @if (rolePermissions != null && roles != null)
-        {
-            for (int i = 0; i < rolePermissions.Count; i++)
-            {
-                var item = rolePermissions[i];
-                <tr data-id="@item.Id"
-                    data-roleid="@item.RoleId"
-                    data-pagename="@item.PageName"
-                    data-isallowed="@item.IsAllowed.ToString().ToLower()"
-                    data-updatedby="@item.UpdatedBy">
-                    <td>
-                        @roles.FirstOrDefault(r => r.RoleId == item.RoleId)?.RoleName
-                    </td>
-                    <td>@item.PageName</td>
-                    <td>@(item.IsAllowed ? "Yes" : "No")</td>
-                    <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
-                    <td>@item.UpdatedBy</td>
-                    <td>
-                        <button type="button" class="btn btn-sm btn-primary btnEdit">Edit</button>
-                        <button type="button" class="btn btn-sm btn-danger btnDelete">Delete</button>
-                    </td>
-                </tr>
+    <h3>Role Permission List</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Role</th>
+                <th>Page Name</th>
+                <th>Is Allowed</th>
+                <th>Created At</th>
+                <th>Updated By</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                var rolePermissions = ViewBag.RolePermissions as List<RolePermissionModel>;
+                var roles = ViewBag.Roles as List<RoleModel>;
             }
-        }
-        else
-        {
-            <tr><td colspan="6">No data found.</td></tr>
-        }
 
-    </tbody>
-</table>
+            @if (rolePermissions != null && roles != null)
+            {
+                for (int i = 0; i < rolePermissions.Count; i++)
+                {
+                    var item = rolePermissions[i];
+                    <tr data-id="@item.Id"
+                        data-roleid="@item.RoleId"
+                        data-pageid="@item.PageId"
+                        data-pagename="@item.PageName"
+                        data-isallowed="@item.IsAllowed.ToString().ToLower()"
+                        data-updatedby="@item.UpdatedBy">
+                        <td>
+                            @roles.FirstOrDefault(r => r.RoleId == item.RoleId)?.RoleName
+                        </td>
+                        <td>@item.PageName</td>
+                        <td>@(item.IsAllowed ? "Yes" : "No")</td>
+                        <td>@item.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td>@item.UpdatedBy</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-primary btnEdit">Edit</button>
+                            <button type="button" class="btn btn-sm btn-danger btnDelete">Delete</button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr><td colspan="6">No data found.</td></tr>
+            }
+
+        </tbody>
+    </table>
+</div>
 
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -112,7 +114,7 @@
                 var formData = {
                     Id: parseInt($('#Id').val()),
                     RoleId: $('#RoleId').val(),
-                    PageName: $('#PageName').val(),
+                    PageId: $('#PageId').val(),
                     IsAllowed: $('#IsAllowed').is(':checked'),
                     UpdatedBy: $('#UpdatedBy').val(),
                     CreatedAt: new Date().toISOString()
@@ -125,9 +127,16 @@
                     success: function (res) {
                         location.reload();
                     },
-                    error: function () {
-                        alert('Error saving data');
+                 error: function (xhr, status, error) {
+                    let errorMessage = "An error occurred.";
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
                     }
+
+                    showMessage(errorMessage, false);
+                }
+
                 });
             });
 
@@ -135,6 +144,7 @@
                 $('#Id').val(0);
                 $('#RoleId').val('');
                 $('#PageName').val('');
+                $('#PageId').val('');
                 $('#IsAllowed').prop('checked', false);
                 $('#UpdatedBy').val('');
             });
@@ -143,6 +153,7 @@
                 var tr = $(this).closest('tr');
                 $('#Id').val(tr.data('id'));
                 $('#RoleId').val(tr.data('roleid'));
+                $('#PageId').val(tr.data('pageid'));
                 $('#PageName').val(tr.data('pagename'));
                 $('#IsAllowed').prop('checked', tr.data('isallowed'));
                 $('#UpdatedBy').val(tr.data('updatedby'));
@@ -160,11 +171,64 @@
                     success: function () {
                         location.reload();
                     },
-                    error: function () {
-                        alert('Error deleting record');
+                    error: function (xhr, status, error) {
+                    let errorMessage = "An error occurred.";
+
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
                     }
+
+                    showMessage(errorMessage, false);
+                }
                 });
             });
         });
+
+
+        function showMessage(message, isSuccess) {
+            $('#customToast').remove();
+
+
+            const toast = $('<div>', {
+                id: 'customToast',
+                class: `toast align-items-center text-white ${isSuccess ? 'bg-success' : 'bg-danger'} border-0 position-fixed top-0 end-0 m-3`,
+                role: 'alert',
+                'aria-live': 'assertive',
+                'aria-atomic': 'true',
+                css: {
+                    zIndex: 1055,
+                    minWidth: '250px'
+                }
+            });
+
+
+            const content = $('<div>', {
+                class: 'd-flex'
+            }).appendTo(toast);
+
+            $('<div>', {
+                class: 'toast-body',
+                text: message
+            }).appendTo(content);
+
+
+            $('<button>', {
+                type: 'button',
+                class: 'btn-close btn-close-white me-2 m-auto',
+                'data-bs-dismiss': 'toast',
+                'aria-label': 'Close'
+            }).appendTo(content);
+
+
+            $('body').append(toast);
+
+
+            const bsToast = new bootstrap.Toast(document.getElementById('customToast'), {
+                delay: 3000
+            });
+            bsToast.show();
+        }
+
+
     </script>
 }

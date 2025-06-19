@@ -344,11 +344,12 @@
             return response.json();
         })
         .then(data => {
+            console.log(data)
                 const parentSelect = document.getElementById("ParentId");
                 for (let i = 0; i < parentSelect.options.length; i++) {
-                        if (parentSelect.options[i].value == data.parentId) {
+                        if (parentSelect.options[i].value == data.id) {
                         parentSelect.options[i].selected = true;
-                        GetACCode(data.parentId);
+                        GetACCode(data.id);
                 }
 
             }

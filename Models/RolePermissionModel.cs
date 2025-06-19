@@ -13,6 +13,9 @@ namespace AccountManagementSystem.Models
         public Guid RoleId { get; set; }
 
         [Required]
+        public int PageId { get; set; }
+
+
         [StringLength(256)]
         public string PageName { get; set; }
 
@@ -27,6 +30,17 @@ namespace AccountManagementSystem.Models
     {
         public List<RolePermissionModel> RolePermissions { get; set; }
         public List<RoleModel> Roles { get; set; }
+    }
+
+    public class NewRolePermissionViewModel
+    {
+        public int Id { get; set; }
+        public Guid RoleId { get; set; }
+        public int PageId { get; set; }
+        public string PageName { get; set; }
+        public bool IsAllowed { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string UpdatedBy { get; set; }
     }
 
 }
