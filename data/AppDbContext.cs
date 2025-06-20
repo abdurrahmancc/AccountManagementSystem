@@ -1,6 +1,8 @@
 ﻿using AccountManagementSystem.Models;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Linq;
 
 namespace AccountManagementSystem.data
 {
@@ -15,46 +17,85 @@ namespace AccountManagementSystem.data
 
         public DbSet<ApplicationPageModel> ApplicationPages { get; set; }
         public DbSet<RolePermissionModel> RolePermissions { get; set; }
+        public DbSet<RolePermissionPageDto> RolePermissionPageDto { get; set; }
 
-        public async Task<List<ApplicationPageModel>> GetApplicationPagesAsync()
+
+
+        public async Task<List<ApplicationPageModel>> GetAllowedPagesByUserIdAsync(string userId)
         {
-            var items = await ApplicationPages
-                .FromSqlRaw("EXEC sp_ManageApplicationPage @Action = 'SELECT'")
+            if (!Guid.TryParse(userId, out Guid parsedUserId))
+                throw new ArgumentException("Invalid UserId");
+
+            var userIdParam = new SqlParameter("@UserId", parsedUserId);
+
+            var allowedPages = await ApplicationPages
+                .FromSqlRaw("EXEC dbo.sp_GetAllowedPagesByUserId @UserId", userIdParam)
                 .ToListAsync();
 
-            //foreach(var item in items)
-            //{
-            //    item
-            //}
-            //return items;
-            return await ApplicationPages
-                  .FromSqlRaw("EXEC sp_ManageApplicationPage @Action = 'SELECT'")
-                  .ToListAsync();
+            return allowedPages;
         }
 
 
 
-
-
-        public async Task<List<RolePermissionModel>> GetRolePermissionsByRoleAsync(Guid roleId)
+        public async Task<List<ApplicationPageModel>> GetApplicationPagesAsync(string userId)
         {
-            var actionParam = new SqlParameter("@Action", "SELECT");
-            var roleIdParam = new SqlParameter("@RoleId", roleId);
+            if (!Guid.TryParse(userId, out Guid parsedUserId))
+                throw new ArgumentException("Invalid UserId");
 
-            var sql = "EXEC sp_ManageRolePermission @Action, @RoleId";
+            Guid? roleId = null;
+            var connString = this.Database.GetDbConnection().ConnectionString;
 
-            var permissions = await RolePermissions
-                .FromSqlRaw(sql, actionParam, roleIdParam)
-                .ToListAsync();
+            using (var conn = new SqlConnection(connString))
+            {
+                await conn.OpenAsync();
 
-            return permissions;
+                using (var cmd = new SqlCommand("sp_GetRoleIdByUserId", conn))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.Add(new SqlParameter("@UserId", parsedUserId));
+
+                    var result = await cmd.ExecuteScalarAsync();
+                    if (result != null && Guid.TryParse(result.ToString(), out Guid parsedRoleId))
+                    {
+                        roleId = parsedRoleId;
+                    }
+                }
+            }
+
+            if (roleId == null) return new List<ApplicationPageModel>();
+            var allPermissions = await RolePermissions.FromSqlRaw("EXEC dbo.sp_GetAllRolePermissions").ToListAsync();
+
+
+            List<int> allowedPageIds = new List<int>();
+            foreach (var rp in allPermissions)
+            {
+                if (rp.RoleId == roleId && rp.IsAllowed)
+                {
+                    if (!allowedPageIds.Contains(rp.PageId))
+                    {
+                        allowedPageIds.Add(rp.PageId);
+                    }
+                }
+            }
+
+
+            var allPages = await ApplicationPages.FromSqlRaw("EXEC sp_ManageApplicationPage @Action = 'SELECT'").ToListAsync();
+
+
+            var allowedPages = new List<ApplicationPageModel>();
+            foreach (var page in allPages)
+            {
+                if (allowedPageIds.Contains(page.PageId))
+                {
+                    allowedPages.Add(page);
+                }
+            }
+
+
+            return allowedPages;
         }
 
-        public async Task<List<RolePermissionModel>> GetAllowedRolePermissionsByRoleAsync(Guid roleId)
-        {
-            var allPermissions = await GetRolePermissionsByRoleAsync(roleId);
-            return allPermissions.Where(p => p.IsAllowed).ToList();
-        }
+
 
     }
 }

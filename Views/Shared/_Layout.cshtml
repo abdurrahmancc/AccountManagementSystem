@@ -4,8 +4,9 @@
 @inject AppDbContext _context
 
 @{
-    var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
-    var pagesTask = _context.GetApplicationPagesAsync();
+    var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    // var pagesTask = _context.GetApplicationPagesAsync(roleClaim);
+    var pagesTask = _context.GetAllowedPagesByUserIdAsync(roleClaim);
     var isLoggedIn = User.Identity.IsAuthenticated;
 }
 

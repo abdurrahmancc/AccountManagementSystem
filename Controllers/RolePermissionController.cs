@@ -178,8 +178,29 @@ public class RolePermissionController : Controller
     [HttpGet("AllowedPermissions/{roleId}")]
     public async Task<IActionResult> AllowedPermissions(Guid roleId)
     {
-        var allowedPermissions = await _context.GetAllowedRolePermissionsByRoleAsync(roleId);
+        var allowedPermissions = await GetAllowedRolePermissionsByRoleAsync(roleId);
         return Ok(allowedPermissions);
+    }
+
+
+    public async Task<List<RolePermissionModel>> GetRolePermissionsByRoleAsync(Guid roleId)
+    {
+        var actionParam = new SqlParameter("@Action", "SELECT");
+        var roleIdParam = new SqlParameter("@RoleId", roleId);
+
+        var sql = "EXEC sp_ManageRolePermission @Action, @RoleId";
+
+        var permissions = await _context.RolePermissions
+            .FromSqlRaw(sql, actionParam, roleIdParam)
+            .ToListAsync();
+
+        return permissions;
+    }
+
+    public async Task<List<RolePermissionModel>> GetAllowedRolePermissionsByRoleAsync(Guid roleId)
+    {
+        var allPermissions = await GetRolePermissionsByRoleAsync(roleId);
+        return allPermissions.Where(p => p.IsAllowed).ToList();
     }
 
     private async Task<string> GetPageNameByIdAsync(int pageId)
