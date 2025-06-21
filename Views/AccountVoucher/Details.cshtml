@@ -6,7 +6,10 @@
 
 
 <div style="overflow-y: auto; height: 100%;">
-    <h2>Voucher List</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center;margin-bottom:20px;">
+        <h2>Voucher List</h2>
+        <a id="btnCreate" href="/AccountVoucher" class="btn btn-sm btn-primary text-white">Create</a>
+    </div>
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="alert alert-success">@TempData["SuccessMessage"]</div>

@@ -3,51 +3,6 @@
 @using Microsoft.AspNetCore.Html
 @using System.Text
 
-<div style="overflow-y: auto; height: 100%;">
-    <input type="hidden" id="selectedAccountId" />
-    <div style="display:flex; align-items:center; justify-content:space-between;">
-        <h2>Chart of Accounts Tree</h2>
-        <div style="display:flex; column-gap: 10px;">
-            @if (ViewBag.Role == "Admin" || ViewBag.Role == "Accountant")
-            {
-                <a id="btnCreate" href="/ChartOfAccount/Create" class="btn btn-sm custom-btn-primary text-white">Create</a>
-                <a id="btnEdit" href="/ChartOfAccount/Edit" class="btn btn-sm custom-btn-primary text-white">Edit</a>
-                <button id="btnDelete" type="button" class="btn btn-sm custom-btn-primary text-white">
-                    Delete
-                </button>
-                <button id="btnPrint" type="button" class="btn btn-sm custom-btn-primary text-white">
-                    Print
-                </button>
-            }
-        </div>
-
-
-    </div>
-
-    <div class="tree" id="tree-container">
-        @Html.Raw(RenderTree(Model))
-    </div>
-@functions {
-    public HtmlString RenderTree(List<AccountManagementSystem.Models.ViewChartOfAccountModel> items)
-    {
-        var sb = new StringBuilder();
-        sb.Append("<ul>");
-        foreach (var item in items)
-        {
-            sb.Append($@"<li class='tree-item' data-id='{item.Id}'>");
-            sb.Append(item.Code);
-            sb.Append(" - ");
-            sb.Append(item.AccountHead);
-            if (item.Children != null && item.Children.Any())
-            {
-                sb.Append(RenderTree(item.Children));
-            }
-        }
-        sb.Append("</ul>");
-        return new HtmlString(sb.ToString());
-    }
-}
-</div>
 
 <style>
 
@@ -63,11 +18,11 @@
         transition: background-color 0.3s ease;
     }
 
-    .custom-btn-primary:hover {
-        background-color: #1abc9c;
-        text-decoration: none;
-        color: white;
-    }
+        .custom-btn-primary:hover {
+            background-color: #1abc9c;
+            text-decoration: none;
+            color: white;
+        }
 
     .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
         box-shadow: none !important;
@@ -123,6 +78,54 @@
             border-radius: 4px;
         }
 </style>
+
+
+<div style="overflow-y: auto; height: 100%;">
+    <input type="hidden" id="selectedAccountId" />
+    <div style="display:flex; align-items:center; justify-content:space-between;">
+        <h2>Chart of Accounts Tree</h2>
+        <div style="display:flex; column-gap: 10px;">
+            @if (ViewBag.Role == "Admin" || ViewBag.Role == "Accountant")
+            {
+                <a id="btnCreate" href="/ChartOfAccount/Create" class="btn btn-sm custom-btn-primary text-white">Create</a>
+                <a id="btnEdit" href="/ChartOfAccount/Edit" class="btn btn-sm custom-btn-primary text-white disabled">Edit</a>
+                <button id="btnDelete" type="button" class="btn btn-sm custom-btn-primary text-white disabled">
+                    Delete
+                </button>
+                <button id="btnPrint" type="button" class="btn btn-sm custom-btn-primary text-white">
+                    Print
+                </button>
+            }
+        </div>
+
+
+    </div>
+
+    <div class="tree" id="tree-container">
+        @Html.Raw(RenderTree(Model))
+    </div>
+@functions {
+    public HtmlString RenderTree(List<AccountManagementSystem.Models.ViewChartOfAccountModel> items)
+    {
+        var sb = new StringBuilder();
+        sb.Append("<ul>");
+        foreach (var item in items)
+        {
+            sb.Append($@"<li class='tree-item' data-id='{item.Id}'>");
+            sb.Append(item.Code);
+            sb.Append(" - ");
+            sb.Append(item.AccountHead);
+            if (item.Children != null && item.Children.Any())
+            {
+                sb.Append(RenderTree(item.Children));
+            }
+        }
+        sb.Append("</ul>");
+        return new HtmlString(sb.ToString());
+    }
+}
+</div>
+
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>

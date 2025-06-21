@@ -4,8 +4,11 @@
     ViewData["Title"] = "Create Voucher";
 }
 <div style="margin-top: 10px; overflow-y: auto; height: 100%">
+    <div style="display:flex; justify-content:space-between; align-items:center;margin-bottom:20px;">
+        <h2>Create Voucher</h2>
+        <a href="/AccountVoucher/Details" class="btn btn-sm btn-primary text-white">Details</a>
+    </div>
 
-    <h2>Create Voucher</h2>
 
     @if (TempData["SuccessMessage"] != null)
     {

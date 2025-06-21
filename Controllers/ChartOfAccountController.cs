@@ -281,7 +281,6 @@ namespace AccountManagementSystem.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Parent dropdown refill করা লাগবে validation error এ
                 model.ParentList = GetParentChartOfAccounts();
                 return View(model);
             }

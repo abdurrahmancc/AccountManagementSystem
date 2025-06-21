@@ -8,6 +8,7 @@
     // var pagesTask = _context.GetApplicationPagesAsync(roleClaim);
     var pagesTask = _context.GetAllowedPagesByUserIdAsync(roleClaim);
     var isLoggedIn = User.Identity.IsAuthenticated;
+
 }
 
 <!DOCTYPE html>
@@ -36,23 +37,31 @@
         overflow-y: auto;
         transition: transform 0.3s ease;
         z-index: 999;
-        }
+    }
 
-        .sidebar a {
-            display: block;
-            color: white;
-            padding: 12px 20px;
-            text-decoration: none;
-            font-size: 16px;
-            border-bottom: 1px solid #4d6173;
-            transition: background-color 0.1s linear, color 0.3s linear, transform 0.1s linear;
-        }
+
+
+    .sidebar a {
+        display: block;
+        color: white;
+        padding: 12px 20px;
+        text-decoration: none;
+        font-size: 16px;
+        border-bottom: 1px solid #4d6173;
+        transition: background-color 0.1s linear, color 0.3s linear, transform 0.1s linear;
+    }
 
 
     .sidebar a:hover {
         background-color: #34495e;
         color: #1abc9c;
     }
+
+    a.active {
+        background-color: #34495e;
+        color: #1abc9c;
+    }
+
 
     .content {
         padding: 32px;
@@ -161,7 +170,7 @@
                 @foreach (var item in await pagesTask)
                 {
                     var pageUrl = item.PageUrl.StartsWith("/") ? item.PageUrl : "/" + item.PageUrl;
-                    <a class="" style="cursor:pointer" href="@pageUrl">@item.PageName</a>
+                    <a class="nav-link" data-pageurl="@pageUrl" style="cursor:pointer" href="@pageUrl">@item.PageName</a>
                 }                       
             </div>
         
@@ -197,6 +206,18 @@
             var sidebar = document.getElementById("sidebar");
             sidebar.classList.toggle("active");
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const currentPath = window.location.pathname.toLowerCase().split("/")[1];
+            document.querySelectorAll("a[data-pageurl]").forEach(function (el) {
+                const pageSegment = el.getAttribute("data-pageurl").toLowerCase().replace(/^\/+/, "").split("/")[0];
+                if (pageSegment === currentPath) {
+                    el.classList.add("active");
+                }
+            });
+        });
+
+
     </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

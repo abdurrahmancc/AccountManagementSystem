@@ -69,8 +69,8 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-//app.UseExceptionHandler("/Error/General");
-//app.UseStatusCodePagesWithReExecute("/Error/{0}");
+app.UseExceptionHandler("/Error/General");
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
 
 
 
