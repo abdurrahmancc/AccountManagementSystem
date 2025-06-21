@@ -37,7 +37,6 @@ Each voucher entry supports:
 - Dynamic multiple debit/credit rows
 - Account selection via dropdown
 - Automatic debit-credit balance validation
-- Stored Procedure: `sp_SaveVoucher`
 
 ---
 
