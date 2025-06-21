@@ -54,11 +54,30 @@ Each voucher entry supports:
 ### 🔐 Login Page
 ![Login Page](wwwroot/images/ss/LoginPage.png)
 
-### 📋 Chart of Accounts
-![Chart of Accounts](images/ss/ChartOfAccountTree.png)
+### 👥 Create User
+![Create User](wwwroot/images/ss/CreateUser.png)
 
-### 🧾 Voucher Entry Form
-![Voucher Entry](https://prnt.sc/_6uZ8JOd7T5o)
+### 🧾 Chart of Account Tree
+![Chart of Account Tree](wwwroot/images/ss/ChartOfAccountTree.png)
+
+### ⚙️ Chart of Account Setup
+![Chart of Account Setup](wwwroot/images/ss/ChartOfAccountSetup.png)
+
+### 📃 Page Setup
+![Page Setup](wwwroot/images/ss/PageSetup.png)
+
+### 🛡️ Role Setup
+![Role Setup](wwwroot/images/ss/RoleSetup.png)
+
+### ✅ Role Permission Setup
+![Role Permission](wwwroot/images/ss/RolePermission.png)
+
+### 💳 Create Voucher
+![Create Voucher](wwwroot/images/ss/CreateVoucher.png)
+
+### 📋 Voucher List
+![Voucher List](wwwroot/images/ss/VoucherList.png)
+
 
 ---
 
