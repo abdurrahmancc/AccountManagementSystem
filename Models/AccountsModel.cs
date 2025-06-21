@@ -29,7 +29,7 @@ namespace AccountManagementSystem.Models
         public string Email { get; set; }
         [Required]
         public string Password { get; set; }
-        [Required(ErrorMessage = "Please select a role.")]
+        [Required(ErrorMessage = "Please select a role")]
         public string SelectedRoleId { get; set; }
         public List<RoleModel> Roles { get; set; }
     }
