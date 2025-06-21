@@ -1,6 +1,6 @@
 ﻿# 🧾 Mini Account Management System
 
-A complete accounting module built using **ASP.NET Core Razor Pages**, **MS SQL Server (stored procedures only)**, and **ASP.NET Identity with custom role-based access**. This project is part of the technical assignment from **Qtec Solution Limited**.
+A complete accounting module built using **ASP.NET Core Razor Pages**, **MS SQL Server (stored procedures only)**, and **ASP.NET Identity with custom role-based access**.
 
 ---
 
@@ -9,7 +9,7 @@ A complete accounting module built using **ASP.NET Core Razor Pages**, **MS SQL 
 - ✅ ASP.NET Core with Razor Pages
 - ✅ MS SQL Server (Stored Procedures Only)
 - ✅ ASP.NET Identity (with custom roles: Admin, Accountant, Viewer)
-- ❌ No LINQ used (per requirement)
+- ❌ No LINQ used
 
 ---
 
@@ -19,8 +19,6 @@ A complete accounting module built using **ASP.NET Core Razor Pages**, **MS SQL 
 - Role-based authentication and authorization
 - Roles: **Admin**, **Accountant**, **Viewer**
 - Permission assignment via stored procedure
-- Stored Procedure: `sp_ManageRolePermission`
-- Role-wise access to modules/pages
 
 ### 2. 🧾 Chart of Accounts
 - Manage account tree with parent-child hierarchy
@@ -80,6 +78,3 @@ Each voucher entry supports:
 
 
 ---
-
-## 📁 Project Structure
-
