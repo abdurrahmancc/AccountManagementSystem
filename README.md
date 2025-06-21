@@ -52,13 +52,13 @@ Each voucher entry supports:
 ## 🖼️ Screenshots
 
 ### 🔐 Login Page
-![Login Page](images/ss/LoginPage.png)
+![Login Page](wwwroot/images/ss/LoginPage.png)
 
 ### 📋 Chart of Accounts
-![Chart of Accounts](screenshots/chart-of-accounts.png)
+![Chart of Accounts](images/ss/ChartOfAccountTree.png)
 
 ### 🧾 Voucher Entry Form
-![Voucher Entry](screenshots/voucher-entry.png)
+![Voucher Entry](https://prnt.sc/_6uZ8JOd7T5o)
 
 ---
 
