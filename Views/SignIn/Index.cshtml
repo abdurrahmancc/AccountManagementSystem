@@ -140,6 +140,7 @@
     <form asp-action="Index" method="post" id="signIn_form" novalidate style="max-width: 495px; margin:auto;" class="custome-floating_form_parent">
         @Html.AntiForgeryToken()
         <h2 style="margin-bottom: 40px;">Login</h2>
+        <div style="display:flex; gap:20px; margin-bottom:32px;"><span>UserName: admin@@gmail.com</span><span>Password: admin@@</span></div>
         <div class="" style="width: 100%;">
             <div class="custom_input_container ">
                 <input asp-for="Email" type="text" class="custom_floating_input_field" placeholder="Enter Username" required>
@@ -151,7 +152,7 @@
                 <span asp-validation-for="Email"></span>
             </div>
             <div class="custom_input_container ">
-                <input asp-for="Password" type="text" class="custom_floating_input_field" placeholder="Enter Password" required>
+                <input asp-for="Password" type="password" class="custom_floating_input_field" placeholder="Enter Password" required>
                 <label asp-for="Password" class="custom_floating_label">
                     <div class="custom_floating_label_dev">
                         Password<span class="req-star">*</span>

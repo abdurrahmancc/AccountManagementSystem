@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Data;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -97,6 +98,25 @@ namespace AccountManagementSystem.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(Guid userId)
+        {
+
+            using (SqlConnection conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                SqlCommand cmd = new SqlCommand("sp_ManageUsers", conn);
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("@ActionType", "DELETE");
+                cmd.Parameters.AddWithValue("@UserId", userId);
+
+                await conn.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            return RedirectToAction("Index");
+            
+        }
 
         private bool CheckEmailExists(string email)
         {
