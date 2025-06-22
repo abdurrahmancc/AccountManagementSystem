@@ -9,12 +9,17 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<JwtService>();
+DotNetEnv.Env.Load();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+var connStr = Environment.GetEnvironmentVariable("DB_CONNECTION");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddDbContext<AppDbContext>(options =>
+//    options.UseSqlServer(connStr));
+
 builder.Services.AddAuthentication(options =>
 {
     //options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
