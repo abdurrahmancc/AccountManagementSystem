@@ -206,7 +206,8 @@ namespace AccountManagementSystem.Controllers
             var accountHeads = new List<SelectListItem>();
 
             using var conn = new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
-            using var cmd = new SqlCommand("SELECT Id, AccountHead FROM ChartOfAccount WHERE IsActive = 1 ORDER BY AccountHead", conn);
+            //using var cmd = new SqlCommand("SELECT Id, AccountHead FROM ChartOfAccount WHERE IsActive = 1 ORDER BY AccountHead", conn);
+            using var cmd = new SqlCommand("SELECT COA.Id, COA.Code +' - '+ COAP.AccountHead +' > ' + COA.AccountHead as AccountHead FROM ChartOfAccount COA left join ChartOfAccount COAP on COA.ParentId = COAP.Id  WHERE COA.IsActive = 1 and COA.IsLastLevel = 1 ORDER BY COA.AccountHead", conn);
             conn.Open();
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
