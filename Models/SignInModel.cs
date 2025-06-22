@@ -6,10 +6,10 @@ namespace AccountManagementSystem.Models
     {
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string Email { get; set; } = "admin@gmail.com";
 
         [Required]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string Password { get; set; } = "admin@";
     }
 }

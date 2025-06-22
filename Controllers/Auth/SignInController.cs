@@ -24,6 +24,7 @@ namespace AccountManagementSystem.Controllers.Auth
         [HttpGet]
         public IActionResult Index()
         {
+            var model = new SignInModel();
             return View();
         }
 
